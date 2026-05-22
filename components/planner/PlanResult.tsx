@@ -2,28 +2,30 @@ export default function PlanResult({ plan }: any) {
   if (!plan) return null
 
   return (
-    <div style={{ padding: 20 }}>
-      <h1>{plan.destination}</h1>
+    <div className="mt-6">
 
-      {plan.days.map((day: any) => (
-        <div key={day.day} style={{ marginBottom: 20 }}>
-          <h2>📅 Day {day.day}</h2>
+      <h2 className="text-2xl font-bold mb-4">
+        📍 {plan.destination}
+      </h2>
 
-          {day.places.map((p: any, i: number) => (
-            <div
-              key={i}
-              style={{
-                padding: 12,
-                marginTop: 8,
-                borderRadius: 10,
-                background: "#f5f5f5",
-              }}
-            >
-              📍 {p.name}
-            </div>
-          ))}
-        </div>
-      ))}
+      <div className="grid gap-3">
+
+        {plan.places.map((place: any) => (
+          <div
+            key={place.id}
+            className="bg-white/10 p-4 rounded-xl"
+          >
+            <h3 className="font-semibold">
+              {place.place_name}
+            </h3>
+
+            <p className="text-sm text-white/70">
+              {place.address_name}
+            </p>
+          </div>
+        ))}
+
+      </div>
     </div>
   )
 }

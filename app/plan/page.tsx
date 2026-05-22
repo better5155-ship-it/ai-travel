@@ -35,5 +35,5 @@ export default function PlanPage() {
 import MapView from "../../components/map/MapView"
 
 <div className="mt-6">
-  <MapView />
+  <MapView places={plan?.places || []} />
 </div>

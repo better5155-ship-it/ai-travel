@@ -1,34 +1,46 @@
 'use client'
 
 import { useState } from "react"
-import { generatePlan } from "@/lib/planner/generatePlan"
+import { searchPlaces } from "../../lib/map/searchPlaces"
 
 export default function PlanForm({ onResult }: any) {
   const [destination, setDestination] = useState("")
-  const [days, setDays] = useState(3)
 
-  const handleSubmit = async () => {
-    const result = await generatePlan({ destination, days })
-    onResult(result)
+  async function handleSubmit(e: any) {
+    e.preventDefault()
+
+    try {
+      const places: any = await searchPlaces(destination)
+
+      const formatted = {
+        destination,
+        places: places.slice(0, 6),
+      }
+
+      onResult(formatted)
+
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   return (
-    <div>
+    <form onSubmit={handleSubmit} className="flex gap-3">
+
       <input
-        placeholder="Destination"
         value={destination}
         onChange={(e) => setDestination(e.target.value)}
+        placeholder="Where do you want to go?"
+        className="flex-1 p-3 rounded-xl text-black"
       />
 
-      <input
-        type="number"
-        value={days}
-        onChange={(e) => setDays(Number(e.target.value))}
-      />
-
-      <button onClick={handleSubmit}>
-        Generate Plan
+      <button
+        type="submit"
+        className="bg-white text-black px-5 rounded-xl font-semibold"
+      >
+        Search
       </button>
-    </div>
+
+    </form>
   )
 }
