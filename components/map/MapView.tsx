@@ -1,23 +1,36 @@
 'use client'
 
-import { useEffect, useRef } from "react"
+import { useEffect } from "react"
 
-export default function MapView({ plan }: any) {
-  const ref = useRef<HTMLDivElement>(null)
-
+export default function MapView() {
   useEffect(() => {
-    if (!ref.current) return
+    const container = document.getElementById("map")
 
-    // 👉 나중에 Google Maps / Kakao Map 여기서 교체
-    ref.current.innerHTML = "[MAP PLACEHOLDER]"
+    const options = {
+      center: new window.kakao.maps.LatLng(37.5665, 126.9780), // 서울
+      level: 5,
+    }
 
-    console.log("Render map with:", plan)
-  }, [plan])
+    const map = new window.kakao.maps.Map(container, options)
+
+    // marker
+    const markerPosition = new window.kakao.maps.LatLng(37.5665, 126.9780)
+
+    const marker = new window.kakao.maps.Marker({
+      position: markerPosition,
+    })
+
+    marker.setMap(map)
+  }, [])
 
   return (
     <div
-      ref={ref}
-      style={{ height: "300px", background: "#eee" }}
+      id="map"
+      style={{
+        width: "100%",
+        height: "400px",
+        borderRadius: "12px",
+      }}
     />
   )
 }

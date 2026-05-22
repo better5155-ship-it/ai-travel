@@ -31,3 +31,9 @@ export default function PlanPage() {
     </div>
   )
 }
+
+import MapView from "../../components/map/MapView"
+
+<div className="mt-6">
+  <MapView />
+</div>
