@@ -8,8 +8,11 @@ export async function searchPlaces(keyword: string) {
         typeof window === 'undefined' ||
         !(window as any).kakao
       ) {
+
         console.log('Waiting for Kakao SDK...')
+
         setTimeout(waitForKakao, 300)
+
         return
       }
 
@@ -19,15 +22,28 @@ export async function searchPlaces(keyword: string) {
 
         const ps = new kakao.maps.services.Places()
 
-        ps.keywordSearch(keyword, (data: any, status: any) => {
+        // 관광지 중심 검색
+        const searchKeyword = `${keyword} 관광지`
 
-          if (status === kakao.maps.services.Status.OK) {
-            resolve(data)
-          } else {
-            reject(status)
+        ps.keywordSearch(
+          searchKeyword,
+
+          (data: any, status: any) => {
+
+            if (
+              status === kakao.maps.services.Status.OK
+            ) {
+
+              resolve(data)
+
+            } else {
+
+              reject(status)
+
+            }
+
           }
-
-        })
+        )
 
       })
 
@@ -36,4 +52,5 @@ export async function searchPlaces(keyword: string) {
     waitForKakao()
 
   })
+
 }
