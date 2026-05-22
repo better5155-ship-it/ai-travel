@@ -22,14 +22,17 @@ export default function PlanPage() {
           AI Travel Planner
         </h1>
 
+        {/* FORM */}
         <div className="mb-6">
           <PlanForm onResult={setPlan} />
         </div>
 
+        {/* MAP (🔥 핵심 수정) */}
         <div className="mb-6">
-          <MapView places={plan?.days?.flatMap((d: any) => d.places) || []} />
+          <MapView plan={plan} />
         </div>
 
+        {/* RESULT */}
         <div>
           <PlanResult plan={plan} />
         </div>
