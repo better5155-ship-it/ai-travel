@@ -32,7 +32,16 @@ export default function PlanForm({ onResult }: any) {
 
               const result: any = await searchPlaces(p.name)
 
-              if (!result?.length) return null
+              // 🔥 ZERO_RESULT 안전 처리
+              if (!result || result.length === 0) {
+                return {
+                  name: p.name,
+                  description: p.description,
+                  address: "Not found",
+                  lat: null,
+                  lng: null
+                }
+              }
 
               const place = result[0]
 
@@ -48,7 +57,7 @@ export default function PlanForm({ onResult }: any) {
 
           return {
             day: day.day,
-            places: places.filter(Boolean)
+            places: places.filter(p => p !== null)
           }
         })
       )

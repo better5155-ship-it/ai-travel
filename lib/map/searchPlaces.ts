@@ -8,11 +8,7 @@ export async function searchPlaces(keyword: string) {
         typeof window === 'undefined' ||
         !(window as any).kakao
       ) {
-
-        console.log('Waiting for Kakao SDK...')
-
         setTimeout(waitForKakao, 300)
-
         return
       }
 
@@ -22,35 +18,36 @@ export async function searchPlaces(keyword: string) {
 
         const ps = new kakao.maps.services.Places()
 
-        // 관광지 중심 검색
-        const searchKeyword = `${keyword} 관광지`
+        // 🔥 핵심 변경: 검색어 정리 (관광지 강제 제거)
+        const cleanKeyword = keyword
+          .replace(/\(.*?\)/g, '')   // 괄호 제거
+          .replace(/-.*/g, '')      // 하이픈 이후 제거
+          .trim()
 
-        ps.keywordSearch(
-          searchKeyword,
+        ps.keywordSearch(cleanKeyword, (data: any, status: any) => {
 
-          (data: any, status: any) => {
-
-            if (
-              status === kakao.maps.services.Status.OK
-            ) {
-
-              resolve(data)
-
-            } else {
-
-              reject(status)
-
-            }
-
+          if (status === kakao.maps.services.Status.OK) {
+            resolve(data)
           }
-        )
+
+          // 🔥 ZERO_RESULT도 정상 처리 (fail 아님)
+          else if (status === kakao.maps.services.Status.ZERO_RESULT) {
+            console.warn("ZERO_RESULT:", cleanKeyword)
+            resolve([])   // 중요
+          }
+
+          else {
+            console.error("Kakao error:", status)
+            reject(status)
+          }
+
+        })
 
       })
 
     }
 
     waitForKakao()
-
   })
 
 }

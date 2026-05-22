@@ -2,9 +2,11 @@ import { openai } from "@/lib/ai/openai"
 import { NextResponse } from "next/server"
 
 export async function POST(req: Request) {
+
   const { destination, days } = await req.json()
 
   try {
+
     const res = await openai.chat.completions.create({
       model: "gpt-4.1-mini",
       messages: [
@@ -15,11 +17,23 @@ You are a travel planner.
 
 Return ONLY valid JSON.
 
-Rules:
-- No explanation
-- No markdown
-- No \`\`\`
-- JSON must be pure
+CRITICAL RULES:
+- Use ONLY famous real landmarks
+- NO explanations in names
+- NO country names
+- NO "area", NO "district"
+- NO parentheses, NO hyphens
+- Must be searchable in Kakao Maps
+
+GOOD:
+- Tokyo Tower
+- Shibuya Crossing
+- Sensoji Temple
+
+BAD:
+- Tokyo Tower (Japan)
+- Shibuya area
+- Tokyo sightseeing district
 
 Format:
 
@@ -44,34 +58,26 @@ Create a ${days}-day travel plan for ${destination}.
       ]
     })
 
-    let content = res.choices[0]?.message?.content || ""
+    const content = res.choices[0]?.message?.content || ""
 
-    // 🔥 핵심: JSON만 추출 (안전장치)
-    const jsonMatch = content.match(/\{[\s\S]*\}/)
+    // 🔥 JSON 안정 추출
+    const match = content.match(/\{[\s\S]*\}/)
 
-    if (!jsonMatch) {
-      console.error("RAW AI OUTPUT:", content)
-      throw new Error("No JSON found in AI response")
+    if (!match) {
+      console.error("RAW AI:", content)
+      throw new Error("Invalid AI response")
     }
 
-    let parsed
-
-    try {
-      parsed = JSON.parse(jsonMatch[0])
-    } catch (err) {
-      console.error("PARSE FAILED RAW:", content)
-      throw new Error("Invalid JSON format from AI")
-    }
+    const parsed = JSON.parse(match[0])
 
     return NextResponse.json(parsed)
 
   } catch (err: any) {
-    console.error("API ERROR:", err)
+
+    console.error(err)
 
     return NextResponse.json(
-      {
-        error: err.message || "AI plan generation failed"
-      },
+      { error: "AI plan generation failed" },
       { status: 500 }
     )
   }
