@@ -4,6 +4,7 @@ import { useState } from "react"
 
 import KakaoLoader from "../../components/map/KakaoLoader"
 import PlanForm from "../../components/planner/PlanForm"
+import PlanResult from "../../components/planner/PlanResult"
 import MapView from "../../components/map/MapView"
 
 export default function PlanPage() {
@@ -13,18 +14,27 @@ export default function PlanPage() {
   return (
     <div className="min-h-screen bg-black text-white p-6">
 
-      {/* 🔥 반드시 client에서만 실행 */}
       <KakaoLoader />
 
       <div className="max-w-5xl mx-auto">
 
-        <PlanForm onResult={setPlan} />
+        <h1 className="text-3xl font-bold mb-6">
+          AI Travel Planner
+        </h1>
 
-        {/* 🔥 핵심: plan 없으면 map 렌더 금지 */}
-        {plan && <MapView plan={plan} />}
+        <div className="mb-6">
+          <PlanForm onResult={setPlan} />
+        </div>
+
+        <div className="mb-6">
+          <MapView places={plan?.days?.flatMap((d: any) => d.places) || []} />
+        </div>
+
+        <div>
+          <PlanResult plan={plan} />
+        </div>
 
       </div>
-
     </div>
   )
 }
