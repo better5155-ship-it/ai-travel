@@ -33,25 +33,25 @@ export default function MapView({ places }: Props) {
 
         const position = new kakao.maps.LatLng(place.lat, place.lng)
 
-        new kakao.maps.Marker({
+        // marker 생성
+        const marker = new kakao.maps.Marker({
           map,
           position,
         })
 
         bounds.extend(position)
 
+        // info window
         const infoWindow = new kakao.maps.InfoWindow({
           content: `
-            <div style="padding:8px;font-size:13px;">
-              <b>${place.name}</b>
+            <div style="padding:8px;font-size:13px;color:black;">
+              <b>${place.name || 'No Name'}</b>
             </div>
           `,
         })
 
-        infoWindow.open(map, new kakao.maps.Marker({
-          map,
-          position,
-        }))
+        // marker에 연결
+        infoWindow.open(map, marker)
 
       })
 
