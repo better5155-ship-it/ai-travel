@@ -1,57 +1,72 @@
 'use client'
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef } from 'react'
 
-declare global {
-  interface Window {
-    kakao: any
-  }
+interface Props {
+  places: any[]
 }
 
-export default function MapView({ places = [] }: any) {
+export default function MapView({ places }: Props) {
+
   const mapRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const kakao = window.kakao
 
-    if (!kakao || !mapRef.current) return
+    if (!(window as any).kakao) return
+
+    const kakao = (window as any).kakao
 
     kakao.maps.load(() => {
 
-      const center = new kakao.maps.LatLng(
-        37.5665,
-        126.9780
-      )
+      if (!mapRef.current) return
+
+      const center = new kakao.maps.LatLng(37.5665, 126.9780)
 
       const map = new kakao.maps.Map(mapRef.current, {
         center,
         level: 5,
       })
 
-      places.forEach((place: any) => {
+      const bounds = new kakao.maps.LatLngBounds()
 
-        const markerPosition = new kakao.maps.LatLng(
-          Number(place.y),
-          Number(place.x)
-        )
+      places.forEach((place) => {
 
-        const marker = new kakao.maps.Marker({
-          position: markerPosition,
+        const position = new kakao.maps.LatLng(place.lat, place.lng)
+
+        new kakao.maps.Marker({
+          map,
+          position,
         })
 
-        marker.setMap(map)
+        bounds.extend(position)
+
+        const infoWindow = new kakao.maps.InfoWindow({
+          content: `
+            <div style="padding:8px;font-size:13px;">
+              <b>${place.name}</b>
+            </div>
+          `,
+        })
+
+        infoWindow.open(map, new kakao.maps.Marker({
+          map,
+          position,
+        }))
+
       })
+
+      if (places.length > 0) {
+        map.setBounds(bounds)
+      }
+
     })
+
   }, [places])
 
   return (
     <div
       ref={mapRef}
-      style={{
-        width: "100%",
-        height: "450px",
-        borderRadius: "16px",
-      }}
+      className="w-full h-[500px] rounded-2xl overflow-hidden border border-white/10"
     />
   )
 }

@@ -5,11 +5,10 @@ export async function searchPlaces(keyword: string) {
     const waitForKakao = () => {
 
       if (
-        typeof window === "undefined" ||
+        typeof window === 'undefined' ||
         !(window as any).kakao
       ) {
-
-        console.log("Waiting for Kakao SDK...")
+        console.log('Waiting for Kakao SDK...')
         setTimeout(waitForKakao, 300)
         return
       }
@@ -23,18 +22,18 @@ export async function searchPlaces(keyword: string) {
         ps.keywordSearch(keyword, (data: any, status: any) => {
 
           if (status === kakao.maps.services.Status.OK) {
-
             resolve(data)
-
           } else {
-
             reject(status)
-
           }
+
         })
+
       })
+
     }
 
     waitForKakao()
+
   })
 }

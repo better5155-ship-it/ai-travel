@@ -1,16 +1,17 @@
-export type Place = {
+export interface Place {
   name: string
+  address: string
   lat: number
   lng: number
-  description?: string
 }
 
-export type DayPlan = {
+export interface DayPlan {
   day: number
   places: Place[]
 }
 
-export type TravelPlan = {
+export interface TravelPlan {
   destination: string
   days: DayPlan[]
+  places: Place[]
 }
