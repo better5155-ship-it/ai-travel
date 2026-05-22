@@ -2,34 +2,39 @@ export async function searchPlaces(keyword: string) {
 
   return new Promise((resolve, reject) => {
 
-    const kakao = (window as any).kakao
+    const checkKakao = () => {
 
-    if (!kakao) {
-      reject("Kakao SDK not loaded")
-      return
-    }
+      const kakao = (window as any).kakao
 
-    kakao.maps.load(() => {
+      // SDK 아직 없음
+      if (!kakao || !kakao.maps) {
 
-      if (!kakao.maps.services) {
-        reject("Places service unavailable")
+        console.log("Waiting for Kakao SDK...")
+
+        setTimeout(checkKakao, 500)
         return
       }
 
-      const ps = new kakao.maps.services.Places()
+      // SDK 로드 완료 후 실행
+      kakao.maps.load(() => {
 
-      ps.keywordSearch(keyword, (data: any, status: any) => {
+        const ps = new kakao.maps.services.Places()
 
-        if (status === kakao.maps.services.Status.OK) {
+        ps.keywordSearch(keyword, (data: any, status: any) => {
 
-          resolve(data)
+          if (status === kakao.maps.services.Status.OK) {
 
-        } else {
+            resolve(data)
 
-          reject(status)
+          } else {
 
-        }
+            reject(status)
+
+          }
+        })
       })
-    })
+    }
+
+    checkKakao()
   })
 }
