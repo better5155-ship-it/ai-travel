@@ -3,26 +3,27 @@ import { NextResponse } from "next/server"
 
 export async function POST(req: Request) {
 
-  const { destination, days } = await req.json()
+  try {
 
-  const res = await openai.chat.completions.create({
-    model: "gpt-4.1-mini",
-    messages: [
-      {
-        role: "user",
-        content: `
+    const { destination, days } = await req.json()
+
+    const res = await openai.chat.completions.create({
+      model: "gpt-4.1-mini",
+      messages: [
+        {
+          role: "user",
+          content: `
 You are a travel planner.
 
 Return ONLY valid JSON.
 
-IMPORTANT:
-You must decide region.
+RULES:
+- MUST include region: "korea" or "global"
+- MUST include days array
+- MUST include places array inside each day
+- EACH place MUST have lat and lng (estimate if needed)
 
-Rules:
-- If destination is in Korea → "region": "korea"
-- Otherwise → "region": "global"
-
-Return format:
+FORMAT:
 
 {
   "destination": "${destination}",
@@ -34,30 +35,43 @@ Return format:
         {
           "name": "string",
           "description": "string",
-          "lat": number,
-          "lng": number
+          "lat": 0,
+          "lng": 0
         }
       ]
     }
   ]
 }
 
-Create a ${days}-day travel plan for ${destination}.
+Make a ${days}-day itinerary for ${destination}.
 `
-      }
-    ]
-  })
+        }
+      ]
+    })
 
-  const content = res.choices[0]?.message?.content || ""
+    const content = res.choices[0]?.message?.content || ""
 
-  const match = content.match(/\{[\s\S]*\}/)
+    const match = content.match(/\{[\s\S]*\}/)
 
-  if (!match) {
+    if (!match) {
+      return NextResponse.json(
+        { error: "invalid ai response" },
+        { status: 500 }
+      )
+    }
+
+    const parsed = JSON.parse(match[0])
+
+    return NextResponse.json(parsed)
+
+  } catch (err: any) {
+
     return NextResponse.json(
-      { error: "Invalid AI response" },
+      {
+        error: true,
+        message: err.message || "AI failed"
+      },
       { status: 500 }
     )
   }
-
-  return NextResponse.json(JSON.parse(match[0]))
 }

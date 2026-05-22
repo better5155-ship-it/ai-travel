@@ -10,7 +10,7 @@ export default function PlanForm({ onResult }: any) {
 
   const handleSubmit = async () => {
 
-    if (!destination) return
+    if (!destination) return alert("Enter destination")
 
     try {
       setLoading(true)
@@ -23,11 +23,17 @@ export default function PlanForm({ onResult }: any) {
 
       const data = await res.json()
 
+      if (!res.ok || !data || data.error) {
+        console.error("API FAILED:", data)
+        alert("AI plan generation failed")
+        return
+      }
+
       onResult(data)
 
     } catch (err) {
       console.error(err)
-      alert("failed")
+      alert("AI plan generation failed")
     } finally {
       setLoading(false)
     }
@@ -39,17 +45,17 @@ export default function PlanForm({ onResult }: any) {
       <input
         value={destination}
         onChange={(e) => setDestination(e.target.value)}
-        className="w-full p-4 rounded-xl bg-black/30 border"
+        className="w-full p-4 rounded-xl bg-black/30 border border-white/10"
         placeholder="Destination"
       />
 
       <select
         value={days}
         onChange={(e) => setDays(Number(e.target.value))}
-        className="w-full p-4 rounded-xl bg-black/30 border"
+        className="w-full p-4 rounded-xl bg-black/30 border border-white/10"
       >
         {Array.from({ length: 14 }).map((_, i) => (
-          <option key={i} value={i + 1}>
+          <option key={i + 1} value={i + 1}>
             {i + 1} Days
           </option>
         ))}
@@ -57,6 +63,7 @@ export default function PlanForm({ onResult }: any) {
 
       <button
         onClick={handleSubmit}
+        disabled={loading}
         className="w-full bg-white text-black py-4 rounded-xl"
       >
         {loading ? "Loading..." : "Generate Plan"}
