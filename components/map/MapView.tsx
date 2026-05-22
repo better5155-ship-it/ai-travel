@@ -21,7 +21,10 @@ export default function MapView({ places }: Props) {
       if (!mapRef.current) return
 
       // 기본 중심 좌표 (서울)
-      const center = new kakao.maps.LatLng(37.5665, 126.9780)
+      const center = new kakao.maps.LatLng(
+        37.5665,
+        126.9780
+      )
 
       // 지도 생성
       const map = new kakao.maps.Map(mapRef.current, {
@@ -29,18 +32,17 @@ export default function MapView({ places }: Props) {
         level: 5,
       })
 
-      // 여러 marker bounds 계산용
+      // bounds
       const bounds = new kakao.maps.LatLngBounds()
 
       places.forEach((place) => {
 
-        // 좌표 생성
         const position = new kakao.maps.LatLng(
           place.lat,
           place.lng
         )
 
-        // marker 생성
+        // marker
         const marker = new kakao.maps.Marker({
           map,
           position,
@@ -49,8 +51,10 @@ export default function MapView({ places }: Props) {
         // bounds 추가
         bounds.extend(position)
 
-        // info window 생성
-        const infoWindow = new kakao.maps.InfoWindow({
+        // custom overlay
+        const overlay = new kakao.maps.CustomOverlay({
+          position,
+
           content: `
             <div
               style="
@@ -68,14 +72,15 @@ export default function MapView({ places }: Props) {
               ${place.name || 'No Name'}
             </div>
           `,
+
+          yAnchor: 1.8,
         })
 
-        // marker 위에 표시
-        infoWindow.open(map, marker)
+        overlay.setMap(map)
 
       })
 
-      // marker들 기준으로 지도 범위 자동 조정
+      // 지도 범위 자동 조정
       if (places.length > 0) {
         map.setBounds(bounds)
       }
