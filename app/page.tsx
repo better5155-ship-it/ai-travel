@@ -1,4 +1,39 @@
 'use client'
+
+import Link from "next/link"
+import { useState } from "react"
+
+export default function Home() {
+  const [lang, setLang] = useState<'en' | 'kr'>('en')
+
+  const content = {
+    en: {
+      title: "Travel AI",
+      subtitle: "Plan your perfect trip with AI",
+      button: "Go Planner →"
+    },
+    kr: {
+      title: "트래블 AI",
+      subtitle: "AI로 만드는 완벽한 여행 일정",
+      button: "여행 플래너 시작 →"
+    }
+  }
+
+  return (
+    <div style={styles.container}>
+      <div style={styles.overlay} />
+
+      {/* language switch */}
+      <div style={styles.langSwitch}>
+        <button onClick={() => setLang('en')} style={styles.langBtn}>EN</button>
+        <button onClick={() => setLang('kr')} style={styles.langBtn}>KR</button>
+      </div>
+
+      <div style={styles.content}>
+        <h1 style={styles.title}>{content[lang].title}</h1>
+        <p style={styles.subtitle}>{content[lang].subtitle}</p>
+
+        <Link href="/plan" style={styles.button}>
           {content[lang].button}
         </Link>
       </div>
@@ -22,10 +57,7 @@ const styles: any = {
 
   overlay: {
     position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    inset: 0,
     background: "rgba(0,0,0,0.55)"
   },
 
@@ -39,8 +71,7 @@ const styles: any = {
   title: {
     fontSize: "64px",
     fontWeight: "800",
-    marginBottom: "10px",
-    letterSpacing: "-1px"
+    marginBottom: "10px"
   },
 
   subtitle: {
@@ -51,18 +82,18 @@ const styles: any = {
 
   button: {
     padding: "14px 28px",
-    backgroundColor: "#ffffff",
+    backgroundColor: "#fff",
     color: "#000",
     borderRadius: "12px",
     textDecoration: "none",
-    fontWeight: "600"
+    fontWeight: "600",
+    display: "inline-block"
   },
 
   langSwitch: {
     position: "absolute",
     top: "20px",
     right: "20px",
-    zIndex: 2,
     display: "flex",
     gap: "8px"
   },
