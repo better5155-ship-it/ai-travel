@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { searchPlaces } from '../../lib/map/searchPlaces'
+import { optimizeRoute } from '../../lib/map/optimizeRoute'
 
 export default function PlanForm({ onResult }: any) {
 
@@ -27,37 +28,33 @@ export default function PlanForm({ onResult }: any) {
       const enrichedDays = await Promise.all(
         aiPlan.days.map(async (day: any) => {
 
-          const places = await Promise.all(
+          const rawPlaces = await Promise.all(
             day.places.map(async (p: any) => {
 
               const result: any = await searchPlaces(p.name)
 
-              // 🔥 ZERO_RESULT 안전 처리
-              if (!result || result.length === 0) {
-                return {
-                  name: p.name,
-                  description: p.description,
-                  address: "Not found",
-                  lat: null,
-                  lng: null
-                }
-              }
+              if (!result?.length) return null
 
               const place = result[0]
 
               return {
                 name: p.name,
                 description: p.description,
-                address: place.address_name,
                 lat: Number(place.y),
                 lng: Number(place.x),
+                address: place.address_name,
               }
             })
           )
 
+          const filtered = rawPlaces.filter(Boolean)
+
+          // 🔥 동선 최적화 적용
+          const ordered = optimizeRoute(filtered)
+
           return {
             day: day.day,
-            places: places.filter(p => p !== null)
+            places: ordered
           }
         })
       )

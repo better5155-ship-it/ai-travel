@@ -8,14 +8,12 @@ export default function MapView({ places }: any) {
 
   useEffect(() => {
 
-    if (!places?.length) return
     if (!(window as any).kakao) return
+    if (!mapRef.current) return
 
     const kakao = (window as any).kakao
 
     kakao.maps.load(() => {
-
-      if (!mapRef.current) return
 
       const map = new kakao.maps.Map(mapRef.current, {
         center: new kakao.maps.LatLng(37.5665, 126.9780),
@@ -24,22 +22,50 @@ export default function MapView({ places }: any) {
 
       const bounds = new kakao.maps.LatLngBounds()
 
-      places.forEach((p: any) => {
+      let prev = null
 
-        if (!p?.lat || !p?.lng) return
+      places.forEach((place: any) => {
 
-        const pos = new kakao.maps.LatLng(p.lat, p.lng)
+        if (!place?.lat || !place?.lng) return
 
-        new kakao.maps.Marker({
+        const pos = new kakao.maps.LatLng(place.lat, place.lng)
+
+        const marker = new kakao.maps.Marker({
           map,
           position: pos,
         })
 
         bounds.extend(pos)
 
+        const info = new kakao.maps.InfoWindow({
+          content: `
+            <div style="padding:8px;text-align:center;color:#000">
+              <b>${place.name}</b>
+            </div>
+          `,
+        })
+
+        kakao.maps.event.addListener(marker, 'click', () => {
+          info.open(map, marker)
+        })
+
+        // 🔥 동선 선 연결
+        if (prev) {
+          new kakao.maps.Polyline({
+            map,
+            path: [prev, pos],
+            strokeWeight: 3,
+            strokeColor: '#4F46E5'
+          })
+        }
+
+        prev = pos
       })
 
-      map.setBounds(bounds)
+      if (places.length > 0) {
+        map.setBounds(bounds)
+      }
+
     })
 
   }, [places])
