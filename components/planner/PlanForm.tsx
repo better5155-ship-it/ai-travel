@@ -15,16 +15,15 @@ export default function PlanForm({ onResult }: any) {
     try {
       setLoading(true)
 
-      const aiRes = await fetch("/api/plan", {
+      const res = await fetch("/api/plan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ destination, days })
       })
 
-      const plan = await aiRes.json()
+      const data = await res.json()
 
-      // 🔥 이제 그대로 사용 (중요)
-      onResult(plan)
+      onResult(data)
 
     } catch (err) {
       console.error(err)

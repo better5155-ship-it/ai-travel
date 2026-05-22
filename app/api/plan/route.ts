@@ -15,29 +15,34 @@ You are a travel planner.
 
 Return ONLY valid JSON.
 
-CRITICAL RULE:
-You MUST include approximate lat/lng (for map display).
-If unknown, estimate near city center.
+IMPORTANT:
+You must decide region.
 
-Format:
+Rules:
+- If destination is in Korea → "region": "korea"
+- Otherwise → "region": "global"
+
+Return format:
+
 {
   "destination": "${destination}",
+  "region": "korea | global",
   "days": [
     {
       "day": 1,
       "places": [
         {
-          "name": "Tokyo Tower",
-          "description": "...",
-          "lat": 35.6586,
-          "lng": 139.7454
+          "name": "string",
+          "description": "string",
+          "lat": number,
+          "lng": number
         }
       ]
     }
   ]
 }
 
-Make a ${days}-day itinerary for ${destination}.
+Create a ${days}-day travel plan for ${destination}.
 `
       }
     ]
@@ -48,7 +53,10 @@ Make a ${days}-day itinerary for ${destination}.
   const match = content.match(/\{[\s\S]*\}/)
 
   if (!match) {
-    return NextResponse.json({ error: "invalid AI" }, { status: 500 })
+    return NextResponse.json(
+      { error: "Invalid AI response" },
+      { status: 500 }
+    )
   }
 
   return NextResponse.json(JSON.parse(match[0]))
