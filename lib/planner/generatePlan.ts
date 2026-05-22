@@ -14,18 +14,21 @@ export async function generatePlan(input: PlanInput): Promise<TravelPlan> {
       places: [
         {
           name: `${input.destination} Spot A`,
+		  address: "Seoul, Korea",
           lat: 37.5665 + Math.random() * 0.01,
           lng: 126.978 + Math.random() * 0.01,
-          description: "Auto generated place"
+          description: "Nice place"
         },
         {
           name: `${input.destination} Spot B`,
+		  address: "Seoul, Korea",
           lat: 37.5665 + Math.random() * 0.02,
           lng: 126.978 + Math.random() * 0.02,
-          description: "Auto generated place"
+          description: "good place"
         }
       ]
-    }))
+    })),
+	places: [],
   }
 
   return mock
