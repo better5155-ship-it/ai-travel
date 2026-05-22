@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 
+import KakaoLoader from "../../components/map/KakaoLoader"
 import PlanForm from "../../components/planner/PlanForm"
 import PlanResult from "../../components/planner/PlanResult"
 import MapView from "../../components/map/MapView"
@@ -12,6 +13,9 @@ export default function PlanPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white p-6">
+
+      {/* Kakao SDK Loader */}
+      <KakaoLoader />
 
       <div className="max-w-5xl mx-auto">
 
