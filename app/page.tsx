@@ -1,16 +1,5 @@
-import Link from "next/link"
-
-export default function Home() {
-  return (
-    <div style={styles.container}>
-      <div style={styles.overlay} />
-
-      <div style={styles.content}>
-        <h1 style={styles.title}>Travel AI</h1>
-        <p style={styles.subtitle}>Plan your perfect trip with AI</p>
-
-        <Link href="/plan" style={styles.button}>
-          Go Planner →
+'use client'
+          {content[lang].button}
         </Link>
       </div>
     </div>
@@ -28,7 +17,7 @@ const styles: any = {
       "url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e')",
     backgroundSize: "cover",
     backgroundPosition: "center",
-    fontFamily: "Arial, sans-serif",
+    fontFamily: "system-ui, sans-serif"
   },
 
   overlay: {
@@ -37,34 +26,53 @@ const styles: any = {
     left: 0,
     right: 0,
     bottom: 0,
-    background: "rgba(0,0,0,0.5)",
+    background: "rgba(0,0,0,0.55)"
   },
 
   content: {
     position: "relative",
     textAlign: "center",
     color: "white",
-    zIndex: 1,
+    zIndex: 1
   },
 
   title: {
-    fontSize: "60px",
-    fontWeight: "bold",
+    fontSize: "64px",
+    fontWeight: "800",
     marginBottom: "10px",
+    letterSpacing: "-1px"
   },
 
   subtitle: {
     fontSize: "20px",
     marginBottom: "30px",
-    opacity: 0.8,
+    opacity: 0.85
   },
 
   button: {
-    padding: "12px 24px",
+    padding: "14px 28px",
     backgroundColor: "#ffffff",
     color: "#000",
-    borderRadius: "10px",
+    borderRadius: "12px",
     textDecoration: "none",
-    fontWeight: "bold",
+    fontWeight: "600"
   },
+
+  langSwitch: {
+    position: "absolute",
+    top: "20px",
+    right: "20px",
+    zIndex: 2,
+    display: "flex",
+    gap: "8px"
+  },
+
+  langBtn: {
+    padding: "6px 10px",
+    borderRadius: "6px",
+    border: "1px solid white",
+    background: "transparent",
+    color: "white",
+    cursor: "pointer"
+  }
 }
