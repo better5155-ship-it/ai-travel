@@ -1,23 +1,32 @@
-import { NextResponse } from "next/server"
-import { generatePlan } from "@/lib/ai/generatePlan"
-
 export async function POST(req: Request) {
 
   const { destination, days } = await req.json()
 
   try {
 
-    const plan = await generatePlan(destination, days)
+    const res = await openai.chat.completions.create({
+      model: "gpt-4.1-mini",
+      messages: [
+        {
+          role: "user",
+          content: `Create ${days} day travel plan for ${destination}`
+        }
+      ]
+    })
 
-    return NextResponse.json(plan)
+    console.log("OPENAI RAW:", res)
 
-  } catch (err) {
+    return Response.json({
+      raw: res.choices[0].message.content
+    })
 
-    console.error(err)
+  } catch (err: any) {
 
-    return NextResponse.json(
-      { error: "AI failed" },
-      { status: 500 }
-    )
+    console.error("OPENAI ERROR:", err)
+
+    return Response.json({
+      error: err?.message || "unknown error"
+    }, { status: 500 })
+
   }
 }
