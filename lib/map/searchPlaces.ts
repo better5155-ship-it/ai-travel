@@ -2,20 +2,20 @@ export async function searchPlaces(keyword: string) {
 
   return new Promise((resolve, reject) => {
 
-    const checkKakao = () => {
+    const waitForKakao = () => {
 
-      const kakao = (window as any).kakao
-
-      // SDK 아직 없음
-      if (!kakao || !kakao.maps) {
+      if (
+        typeof window === "undefined" ||
+        !(window as any).kakao
+      ) {
 
         console.log("Waiting for Kakao SDK...")
-
-        setTimeout(checkKakao, 500)
+        setTimeout(waitForKakao, 300)
         return
       }
 
-      // SDK 로드 완료 후 실행
+      const kakao = (window as any).kakao
+
       kakao.maps.load(() => {
 
         const ps = new kakao.maps.services.Places()
@@ -35,6 +35,6 @@ export async function searchPlaces(keyword: string) {
       })
     }
 
-    checkKakao()
+    waitForKakao()
   })
 }
