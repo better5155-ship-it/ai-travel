@@ -1,16 +1,37 @@
 export async function searchPlaces(keyword: string) {
-  return new Promise(async (resolve, reject) => {
+  return new Promise(async (resolve) => {
 
     const cleanKeyword = keyword
       .replace(/\(.*?\)/g, '')
       .replace(/-.*/g, '')
       .trim()
 
+    // 🌍 Google Places (fallback)
+    const googleSearch = async () => {
+
+      const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(cleanKeyword)}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY}`
+
+      try {
+        const res = await fetch(url)
+        const data = await res.json()
+
+        return (data.results || []).map((p: any) => ({
+          place_name: p.name,
+          address_name: p.formatted_address,
+          x: p.geometry.location.lng,
+          y: p.geometry.location.lat,
+        }))
+      } catch {
+        return []
+      }
+    }
+
+    // 🇰🇷 Kakao Search
     const kakaoSearch = () => {
-      return new Promise((res, rej) => {
+      return new Promise((res) => {
 
         const kakao = (window as any).kakao
-        if (!kakao) return rej("NO_KAKAO")
+        if (!kakao) return res([])
 
         kakao.maps.load(() => {
           const ps = new kakao.maps.services.Places()
@@ -20,38 +41,28 @@ export async function searchPlaces(keyword: string) {
             if (status === kakao.maps.services.Status.OK) {
               res(data)
             } else {
-              rej(status)
+              res([])
             }
+
           })
         })
       })
     }
 
-    const googleSearch = async () => {
+    // 🔥 자동 분기 (핵심)
+    const isKoreaQuery =
+      /korea|seoul|busan|jeju|한국|서울|부산|제주/i.test(cleanKeyword)
 
-      const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(cleanKeyword)}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY}`
+    let result = []
 
-      const res = await fetch(url)
-      const data = await res.json()
-
-      return (data.results || []).map((p: any) => ({
-        place_name: p.name,
-        address_name: p.formatted_address,
-        x: p.geometry.location.lng,
-        y: p.geometry.location.lat,
-      }))
+    if (isKoreaQuery) {
+      result = await kakaoSearch()
     }
 
-    try {
-      const kakao = await kakaoSearch()
-      resolve(kakao)
-    } catch (e) {
-      try {
-        const google = await googleSearch()
-        resolve(google)
-      } catch (e2) {
-        resolve([])
-      }
+    if (!result || result.length === 0) {
+      result = await googleSearch()
     }
+
+    resolve(result)
   })
 }

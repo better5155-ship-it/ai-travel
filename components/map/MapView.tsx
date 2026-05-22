@@ -22,9 +22,9 @@ export default function MapView({ places }: any) {
 
       const bounds = new kakao.maps.LatLngBounds()
 
-      let prev: any = null
+      const markers: any[] = []
 
-      places.forEach((place: any) => {
+      places.forEach((place: any, index: number) => {
 
         if (!place?.lat || !place?.lng) return
 
@@ -35,12 +35,20 @@ export default function MapView({ places }: any) {
           position: pos,
         })
 
+        markers.push(marker)
         bounds.extend(pos)
 
         const info = new kakao.maps.InfoWindow({
           content: `
-            <div style="padding:8px;text-align:center;color:#000">
-              <b>${place.name}</b>
+            <div style="
+              padding:10px;
+              text-align:center;
+              font-size:13px;
+              color:#000;
+              min-width:140px;
+            ">
+              <b>${index + 1}. ${place.name}</b><br/>
+              <span style="font-size:11px;">${place.address || ''}</span>
             </div>
           `,
         })
@@ -48,18 +56,6 @@ export default function MapView({ places }: any) {
         kakao.maps.event.addListener(marker, 'click', () => {
           info.open(map, marker)
         })
-
-        // 🔥 동선 선 연결
-        if (prev) {
-          new kakao.maps.Polyline({
-            map,
-            path: [prev, pos],
-            strokeWeight: 3,
-            strokeColor: '#4F46E5'
-          })
-        }
-
-        prev = pos
       })
 
       if (places.length > 0) {
