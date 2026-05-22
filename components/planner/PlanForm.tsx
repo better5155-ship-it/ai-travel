@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { searchPlaces } from '@/lib/map/searchPlaces'
+import { searchPlaces } from '../../lib/map/searchPlaces'
 
 export default function PlanForm({ onResult }: any) {
 
