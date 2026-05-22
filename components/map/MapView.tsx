@@ -22,46 +22,39 @@ export default function MapView({ places }: any) {
 
       const bounds = new kakao.maps.LatLngBounds()
 
-      const markers: any[] = []
+      let prev: any = null
 
-      places.forEach((place: any, index: number) => {
+      // 🔥 flatten (핵심)
+      const flatPlaces = places?.days?.flatMap((d: any) => d.places) || []
 
-        if (!place?.lat || !place?.lng) return
+      flatPlaces.forEach((p: any) => {
 
-        const pos = new kakao.maps.LatLng(place.lat, place.lng)
+        if (!p.lat || !p.lng) return
 
-        const marker = new kakao.maps.Marker({
+        const pos = new kakao.maps.LatLng(p.lat, p.lng)
+
+        new kakao.maps.Marker({
           map,
           position: pos,
         })
 
-        markers.push(marker)
         bounds.extend(pos)
 
-        const info = new kakao.maps.InfoWindow({
-          content: `
-            <div style="
-              padding:10px;
-              text-align:center;
-              font-size:13px;
-              color:#000;
-              min-width:140px;
-            ">
-              <b>${index + 1}. ${place.name}</b><br/>
-              <span style="font-size:11px;">${place.address || ''}</span>
-            </div>
-          `,
-        })
+        if (prev) {
+          new kakao.maps.Polyline({
+            map,
+            path: [prev, pos],
+            strokeWeight: 3,
+            strokeColor: '#4F46E5'
+          })
+        }
 
-        kakao.maps.event.addListener(marker, 'click', () => {
-          info.open(map, marker)
-        })
+        prev = pos
       })
 
-      if (places.length > 0) {
+      if (flatPlaces.length > 0) {
         map.setBounds(bounds)
       }
-
     })
 
   }, [places])
@@ -69,7 +62,7 @@ export default function MapView({ places }: any) {
   return (
     <div
       ref={mapRef}
-      className="w-full h-[500px] rounded-2xl border border-white/10"
+      className="w-full h-[500px] rounded-2xl border"
     />
   )
 }

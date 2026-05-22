@@ -5,38 +5,21 @@ export async function POST(req: Request) {
 
   const { destination, days } = await req.json()
 
-  try {
-
-    const res = await openai.chat.completions.create({
-      model: "gpt-4.1-mini",
-      messages: [
-        {
-          role: "user",
-          content: `
+  const res = await openai.chat.completions.create({
+    model: "gpt-4.1-mini",
+    messages: [
+      {
+        role: "user",
+        content: `
 You are a travel planner.
 
 Return ONLY valid JSON.
 
-CRITICAL RULES:
-- Use ONLY famous real landmarks
-- NO explanations in names
-- NO country names
-- NO "area", NO "district"
-- NO parentheses, NO hyphens
-- Must be searchable in Kakao Maps
-
-GOOD:
-- Tokyo Tower
-- Shibuya Crossing
-- Sensoji Temple
-
-BAD:
-- Tokyo Tower (Japan)
-- Shibuya area
-- Tokyo sightseeing district
+CRITICAL RULE:
+You MUST include approximate lat/lng (for map display).
+If unknown, estimate near city center.
 
 Format:
-
 {
   "destination": "${destination}",
   "days": [
@@ -44,41 +27,29 @@ Format:
       "day": 1,
       "places": [
         {
-          "name": "string",
-          "description": "string"
+          "name": "Tokyo Tower",
+          "description": "...",
+          "lat": 35.6586,
+          "lng": 139.7454
         }
       ]
     }
   ]
 }
 
-Create a ${days}-day travel plan for ${destination}.
+Make a ${days}-day itinerary for ${destination}.
 `
-        }
-      ]
-    })
+      }
+    ]
+  })
 
-    const content = res.choices[0]?.message?.content || ""
+  const content = res.choices[0]?.message?.content || ""
 
-    // 🔥 JSON 안정 추출
-    const match = content.match(/\{[\s\S]*\}/)
+  const match = content.match(/\{[\s\S]*\}/)
 
-    if (!match) {
-      console.error("RAW AI:", content)
-      throw new Error("Invalid AI response")
-    }
-
-    const parsed = JSON.parse(match[0])
-
-    return NextResponse.json(parsed)
-
-  } catch (err: any) {
-
-    console.error(err)
-
-    return NextResponse.json(
-      { error: "AI plan generation failed" },
-      { status: 500 }
-    )
+  if (!match) {
+    return NextResponse.json({ error: "invalid AI" }, { status: 500 })
   }
+
+  return NextResponse.json(JSON.parse(match[0]))
 }

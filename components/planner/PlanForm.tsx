@@ -1,8 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { searchPlaces } from '../../lib/map/searchPlaces'
-import { optimizeRoute } from '../../lib/map/optimizeRoute'
 
 export default function PlanForm({ onResult }: any) {
 
@@ -12,7 +10,7 @@ export default function PlanForm({ onResult }: any) {
 
   const handleSubmit = async () => {
 
-    if (!destination) return alert("Enter destination")
+    if (!destination) return
 
     try {
       setLoading(true)
@@ -23,50 +21,14 @@ export default function PlanForm({ onResult }: any) {
         body: JSON.stringify({ destination, days })
       })
 
-      const aiPlan = await aiRes.json()
+      const plan = await aiRes.json()
 
-      const enrichedDays = await Promise.all(
-        aiPlan.days.map(async (day: any) => {
-
-          const rawPlaces = await Promise.all(
-            day.places.map(async (p: any) => {
-
-              const result: any = await searchPlaces(p.name)
-
-              if (!result?.length) return null
-
-              const place = result[0]
-
-              return {
-                name: p.name,
-                description: p.description,
-                lat: Number(place.y),
-                lng: Number(place.x),
-                address: place.address_name,
-              }
-            })
-          )
-
-          const filtered = rawPlaces.filter(Boolean)
-
-          // 🔥 동선 최적화 적용
-          const ordered = optimizeRoute(filtered)
-
-          return {
-            day: day.day,
-            places: ordered
-          }
-        })
-      )
-
-      onResult({
-        destination,
-        days: enrichedDays
-      })
+      // 🔥 이제 그대로 사용 (중요)
+      onResult(plan)
 
     } catch (err) {
       console.error(err)
-      alert("AI plan generation failed")
+      alert("failed")
     } finally {
       setLoading(false)
     }
@@ -76,19 +38,19 @@ export default function PlanForm({ onResult }: any) {
     <div className="space-y-5">
 
       <input
-        className="w-full p-4 rounded-xl bg-black/30 border border-white/10"
         value={destination}
         onChange={(e) => setDestination(e.target.value)}
+        className="w-full p-4 rounded-xl bg-black/30 border"
         placeholder="Destination"
       />
 
       <select
-        className="w-full p-4 rounded-xl bg-black/30 border border-white/10"
         value={days}
         onChange={(e) => setDays(Number(e.target.value))}
+        className="w-full p-4 rounded-xl bg-black/30 border"
       >
         {Array.from({ length: 14 }).map((_, i) => (
-          <option key={i + 1} value={i + 1}>
+          <option key={i} value={i + 1}>
             {i + 1} Days
           </option>
         ))}
@@ -96,8 +58,7 @@ export default function PlanForm({ onResult }: any) {
 
       <button
         onClick={handleSubmit}
-        disabled={loading}
-        className="w-full bg-white text-black font-bold py-4 rounded-xl"
+        className="w-full bg-white text-black py-4 rounded-xl"
       >
         {loading ? "Loading..." : "Generate Plan"}
       </button>
