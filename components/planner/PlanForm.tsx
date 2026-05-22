@@ -1,4 +1,14 @@
 'use client'
+
+import { useState } from 'react'
+import { searchPlaces } from '@/lib/map/searchPlaces'
+
+export default function PlanForm({ onResult }: any) {
+
+  const [destination, setDestination] = useState('')
+  const [days, setDays] = useState(3)
+  const [loading, setLoading] = useState(false)
+
   const handleSubmit = async () => {
 
     try {
