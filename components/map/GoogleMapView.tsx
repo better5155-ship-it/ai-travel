@@ -8,7 +8,9 @@ export default function GoogleMapView({ places }: any) {
 
   useEffect(() => {
 
-    if (!mapRef.current || !window.google) return
+    const google = (window as any).google
+
+    if (!mapRef.current || !google) return
 
     const map = new google.maps.Map(mapRef.current, {
       center: places?.[0]
