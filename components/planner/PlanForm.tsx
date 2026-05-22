@@ -4,23 +4,35 @@ import { useState } from "react"
 import { searchPlaces } from "../../lib/map/searchPlaces"
 
 export default function PlanForm({ onResult }: any) {
+
   const [destination, setDestination] = useState("")
+  const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e: any) {
     e.preventDefault()
 
     try {
+
+      setLoading(true)
+
+      console.log("Searching:", destination)
+
       const places: any = await searchPlaces(destination)
 
-      const formatted = {
+      console.log("RESULT:", places)
+
+      onResult({
         destination,
         places: places.slice(0, 6),
-      }
-
-      onResult(formatted)
+      })
 
     } catch (err) {
-      console.error(err)
+
+      console.error("SEARCH ERROR:", err)
+      alert("Place search failed")
+
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -38,7 +50,7 @@ export default function PlanForm({ onResult }: any) {
         type="submit"
         className="bg-white text-black px-5 rounded-xl font-semibold"
       >
-        Search
+        {loading ? "Loading..." : "Search"}
       </button>
 
     </form>
