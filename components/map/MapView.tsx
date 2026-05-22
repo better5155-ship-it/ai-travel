@@ -22,7 +22,7 @@ export default function MapView({ places }: any) {
 
       const bounds = new kakao.maps.LatLngBounds()
 
-      let prev = null
+      let prev: kakao.maps.LatLng | null = null
 
       places.forEach((place: any) => {
 
