@@ -16,3 +16,6 @@ export default function MapView({ plan }: any) {
 
   return <KakaoMapView places={places} />
 }
+
+console.log("PLAN DATA:", plan)
+console.log("FLAT PLACES:", places?.days?.flatMap?.(d => d.places))
