@@ -9,24 +9,65 @@ export async function POST(req: Request) {
 
     const res = await openai.chat.completions.create({
       model: "gpt-4.1-mini",
+
       messages: [
         {
           role: "user",
-          content: `Create ${days} day travel plan for ${destination}`
+          content: `
+You are a travel planner.
+
+Return ONLY valid JSON. No explanation, no markdown.
+
+Format exactly like this:
+
+{
+  "destination": "${destination}",
+  "days": [
+    {
+      "day": 1,
+      "places": [
+        {
+          "name": "string",
+          "lat": 0,
+          "lng": 0,
+          "description": "string"
+        }
+      ]
+    }
+  ]
+}
+
+Create a ${days}-day travel plan for ${destination}.
+`
         }
       ]
     })
 
-    return NextResponse.json({
-      result: res.choices[0].message.content
-    })
+    const content = res.choices[0].message.content
+
+    if (!content) {
+      throw new Error("Empty AI response")
+    }
+
+    let parsed
+
+    try {
+      parsed = JSON.parse(content)
+    } catch (err) {
+      console.error("❌ RAW AI OUTPUT:", content)
+      throw new Error("AI returned invalid JSON")
+    }
+
+    return NextResponse.json(parsed)
 
   } catch (err: any) {
 
-    console.error(err)
+    console.error("❌ API ERROR:", err)
 
     return NextResponse.json(
-      { error: err.message },
+      {
+        error: err.message || "AI plan generation failed"
+      },
       { status: 500 }
     )
   }
