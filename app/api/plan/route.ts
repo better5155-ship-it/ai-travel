@@ -1,3 +1,6 @@
+import { openai } from "@/lib/ai/openai"
+import { NextResponse } from "next/server"
+
 export async function POST(req: Request) {
 
   const { destination, days } = await req.json()
@@ -14,19 +17,17 @@ export async function POST(req: Request) {
       ]
     })
 
-    console.log("OPENAI RAW:", res)
-
-    return Response.json({
-      raw: res.choices[0].message.content
+    return NextResponse.json({
+      result: res.choices[0].message.content
     })
 
   } catch (err: any) {
 
-    console.error("OPENAI ERROR:", err)
+    console.error(err)
 
-    return Response.json({
-      error: err?.message || "unknown error"
-    }, { status: 500 })
-
+    return NextResponse.json(
+      { error: err.message },
+      { status: 500 }
+    )
   }
 }
