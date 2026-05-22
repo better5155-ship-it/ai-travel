@@ -1,6 +1,5 @@
 'use client'
-console.log("KAKAO:", (window as any).kakao)
-console.log("GOOGLE:", (window as any).google)
+
 import { useEffect, useState } from 'react'
 import KakaoMapView from './KakaoMapView'
 import GoogleMapView from './GoogleMapView'
