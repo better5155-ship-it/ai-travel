@@ -4,33 +4,32 @@ import { useEffect } from "react"
 
 export default function MapView() {
   useEffect(() => {
-    const container = document.getElementById("map")
+    const kakao = (window as any).kakao
 
-    const options = {
-      center: new window.kakao.maps.LatLng(37.5665, 126.9780), // 서울
-      level: 5,
-    }
+    if (!kakao || !kakao.maps) return
 
-    const map = new window.kakao.maps.Map(container, options)
+    kakao.maps.load(() => {
+      const container = document.getElementById("map")
 
-    // marker
-    const markerPosition = new window.kakao.maps.LatLng(37.5665, 126.9780)
+      const options = {
+        center: new kakao.maps.LatLng(37.5665, 126.9780),
+        level: 5,
+      }
 
-    const marker = new window.kakao.maps.Marker({
-      position: markerPosition,
+      const map = new kakao.maps.Map(container, options)
+
+      const marker = new kakao.maps.Marker({
+        position: new kakao.maps.LatLng(37.5665, 126.9780),
+      })
+
+      marker.setMap(map)
     })
-
-    marker.setMap(map)
   }, [])
 
   return (
     <div
       id="map"
-      style={{
-        width: "100%",
-        height: "400px",
-        borderRadius: "12px",
-      }}
+      style={{ width: "100%", height: "400px", borderRadius: "12px" }}
     />
   )
 }
