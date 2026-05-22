@@ -24,15 +24,26 @@ export default function MapView({ places }: any) {
 
       let prev: any = null
 
-      // 🔥 flatten (핵심)
-      const flatPlaces = places?.days?.flatMap((d: any) => d.places) || []
+      // 🔥 안전 flatten
+      const flatPlaces =
+        places?.days?.flat?.() ||
+        places || []
 
-      flatPlaces.forEach((p: any) => {
+      const validPlaces = flatPlaces.filter((p: any) =>
+        p?.lat != null &&
+        p?.lng != null &&
+        !isNaN(Number(p.lat)) &&
+        !isNaN(Number(p.lng))
+      )
 
-        if (!p.lat || !p.lng) return
+      validPlaces.forEach((p: any, index: number) => {
 
-        const pos = new kakao.maps.LatLng(p.lat, p.lng)
+        const lat = Number(p.lat)
+        const lng = Number(p.lng)
 
+        const pos = new kakao.maps.LatLng(lat, lng)
+
+        // marker
         new kakao.maps.Marker({
           map,
           position: pos,
@@ -40,19 +51,21 @@ export default function MapView({ places }: any) {
 
         bounds.extend(pos)
 
+        // 🔥 polyline (핵심)
         if (prev) {
           new kakao.maps.Polyline({
             map,
             path: [prev, pos],
             strokeWeight: 3,
-            strokeColor: '#4F46E5'
+            strokeColor: '#4F46E5',
+            strokeOpacity: 0.9,
           })
         }
 
         prev = pos
       })
 
-      if (flatPlaces.length > 0) {
+      if (validPlaces.length > 0) {
         map.setBounds(bounds)
       }
     })
@@ -62,7 +75,7 @@ export default function MapView({ places }: any) {
   return (
     <div
       ref={mapRef}
-      className="w-full h-[500px] rounded-2xl border"
+      className="w-full h-[500px] rounded-2xl border border-white/10"
     />
   )
 }
