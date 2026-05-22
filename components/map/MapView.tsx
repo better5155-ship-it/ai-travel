@@ -24,26 +24,23 @@ export default function MapView({ places }: any) {
 
       let prev: any = null
 
-      // 🔥 안전 flatten
       const flatPlaces =
         places?.days?.flat?.() ||
         places || []
 
       const validPlaces = flatPlaces.filter((p: any) =>
-        p?.lat != null &&
-        p?.lng != null &&
+        p?.lat && p?.lng &&
         !isNaN(Number(p.lat)) &&
         !isNaN(Number(p.lng))
       )
 
-      validPlaces.forEach((p: any, index: number) => {
+      validPlaces.forEach((p: any) => {
 
-        const lat = Number(p.lat)
-        const lng = Number(p.lng)
+        const pos = new kakao.maps.LatLng(
+          Number(p.lat),
+          Number(p.lng)
+        )
 
-        const pos = new kakao.maps.LatLng(lat, lng)
-
-        // marker
         new kakao.maps.Marker({
           map,
           position: pos,
@@ -51,23 +48,49 @@ export default function MapView({ places }: any) {
 
         bounds.extend(pos)
 
-        // 🔥 polyline (핵심)
         if (prev) {
           new kakao.maps.Polyline({
             map,
             path: [prev, pos],
             strokeWeight: 3,
             strokeColor: '#4F46E5',
-            strokeOpacity: 0.9,
           })
         }
 
         prev = pos
       })
 
+      // 🔥 핵심 FIX 1: bounds 적용 안정화
       if (validPlaces.length > 0) {
+
         map.setBounds(bounds)
+
+        // 🔥 FIX 2: zoom 폭주 방지
+        const listener = kakao.maps.event.addListener(map, 'bounds_changed', () => {
+
+          const level = map.getLevel()
+
+          // 너무 멀어지면 강제로 제한
+          if (level > 10) {
+            map.setLevel(10)
+          }
+
+          kakao.maps.event.removeListener(listener)
+        })
       }
+
+      // 🔥 FIX 3: fallback (완전 흰 화면 방지)
+      setTimeout(() => {
+
+        const center = map.getCenter()
+
+        if (!center || validPlaces.length === 0) {
+          map.setCenter(new kakao.maps.LatLng(37.5665, 126.9780))
+          map.setLevel(5)
+        }
+
+      }, 500)
+
     })
 
   }, [places])
