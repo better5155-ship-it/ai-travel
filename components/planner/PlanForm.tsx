@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { searchPlaces } from '../../lib/map/searchPlaces'
 
 export default function PlanForm({ onResult }: any) {
 
@@ -13,52 +12,36 @@ export default function PlanForm({ onResult }: any) {
 
     try {
 
-      if (!destination) {
-        alert('Please enter a destination')
-        return
-      }
-
       setLoading(true)
 
-      // Kakao 장소 검색
-      const result: any = await searchPlaces(destination)
+      // 🚀 1. OpenAI API Route 호출 (서버에서만 AI 실행)
+      const res = await fetch('/api/plan', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          destination,
+          days,
+        }),
+      })
 
-      // 장소 데이터 변환
-      const places = result.slice(0, days * 2).map((place: any) => ({
-        name: place.place_name,
-        address: place.address_name,
-        lat: Number(place.y),
-        lng: Number(place.x),
-      }))
+      const aiPlan = await res.json()
 
-      // Day별 일정 분리
-      const planDays = []
-
-      for (let i = 0; i < days; i++) {
-
-        planDays.push({
-          day: i + 1,
-
-          places: places.slice(
-            i * 2,
-            i * 2 + 2
-          ),
-        })
-
+      if (!aiPlan?.days) {
+        throw new Error('Invalid AI response')
       }
 
-      // 부모 전달
+      // 🚀 2. 그대로 UI로 전달
       onResult({
         destination,
-        places,
-        days: planDays,
+        days: aiPlan.days,
       })
 
     } catch (err) {
 
       console.error(err)
-
-      alert('Place search failed')
+      alert('AI plan generation failed')
 
     } finally {
 
@@ -72,85 +55,36 @@ export default function PlanForm({ onResult }: any) {
     <div className="space-y-5">
 
       {/* destination */}
-      <div>
-        <label className="block mb-2 text-sm text-white/70">
-          Destination
-        </label>
-
-        <input
-          type="text"
-          placeholder="Tokyo, Seoul, Paris..."
-          value={destination}
-          onChange={(e) => setDestination(e.target.value)}
-          className="
-            w-full
-            p-4
-            rounded-2xl
-            bg-black/30
-            border
-            border-white/10
-            outline-none
-            focus:border-white/30
-            transition
-          "
-        />
-      </div>
+      <input
+        type="text"
+        placeholder="Destination (Tokyo, Seoul...)"
+        value={destination}
+        onChange={(e) => setDestination(e.target.value)}
+        className="w-full p-4 rounded-xl bg-black/30 border border-white/10"
+      />
 
       {/* days */}
-      <div>
-        <label className="block mb-2 text-sm text-white/70">
-          Travel Days
-        </label>
+      <select
+        value={days}
+        onChange={(e) => setDays(Number(e.target.value))}
+        className="w-full p-4 rounded-xl bg-black/30 border border-white/10"
+      >
 
-        <select
-          value={days}
-          onChange={(e) => setDays(Number(e.target.value))}
-          className="
-            w-full
-            p-4
-            rounded-2xl
-            bg-black/30
-            border
-            border-white/10
-            outline-none
-            focus:border-white/30
-            transition
-          "
-        >
+        {Array.from({ length: 14 }).map((_, i) => (
+          <option key={i + 1} value={i + 1}>
+            {i + 1} Days
+          </option>
+        ))}
 
-          {Array.from({ length: 14 }).map((_, i) => (
-
-            <option
-              key={i + 1}
-              value={i + 1}
-            >
-              {i + 1} Days
-            </option>
-
-          ))}
-
-        </select>
-      </div>
+      </select>
 
       {/* button */}
       <button
         onClick={handleSubmit}
         disabled={loading}
-        className="
-          w-full
-          bg-white
-          text-black
-          font-bold
-          py-4
-          rounded-2xl
-          hover:scale-[1.02]
-          transition
-          disabled:opacity-50
-        "
+        className="w-full bg-white text-black font-bold py-4 rounded-xl"
       >
-        {loading
-          ? 'Searching...'
-          : 'Generate AI Travel Plan'}
+        {loading ? 'Generating AI Plan...' : 'Generate Plan'}
       </button>
 
     </div>
