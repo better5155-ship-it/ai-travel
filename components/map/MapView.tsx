@@ -20,18 +20,25 @@ export default function MapView({ places }: Props) {
 
       if (!mapRef.current) return
 
+      // 기본 중심 좌표 (서울)
       const center = new kakao.maps.LatLng(37.5665, 126.9780)
 
+      // 지도 생성
       const map = new kakao.maps.Map(mapRef.current, {
         center,
         level: 5,
       })
 
+      // 여러 marker bounds 계산용
       const bounds = new kakao.maps.LatLngBounds()
 
       places.forEach((place) => {
 
-        const position = new kakao.maps.LatLng(place.lat, place.lng)
+        // 좌표 생성
+        const position = new kakao.maps.LatLng(
+          place.lat,
+          place.lng
+        )
 
         // marker 생성
         const marker = new kakao.maps.Marker({
@@ -39,22 +46,36 @@ export default function MapView({ places }: Props) {
           position,
         })
 
+        // bounds 추가
         bounds.extend(position)
 
-        // info window
+        // info window 생성
         const infoWindow = new kakao.maps.InfoWindow({
           content: `
-            <div style="padding:8px;font-size:13px;color:black;">
-              <b>${place.name || 'No Name'}</b>
+            <div
+              style="
+                padding:10px 14px;
+                font-size:13px;
+                color:#111;
+                text-align:center;
+                min-width:120px;
+                font-weight:600;
+                border-radius:12px;
+                background:white;
+                box-shadow:0 4px 12px rgba(0,0,0,0.15);
+              "
+            >
+              ${place.name || 'No Name'}
             </div>
           `,
         })
 
-        // marker에 연결
+        // marker 위에 표시
         infoWindow.open(map, marker)
 
       })
 
+      // marker들 기준으로 지도 범위 자동 조정
       if (places.length > 0) {
         map.setBounds(bounds)
       }
@@ -66,7 +87,15 @@ export default function MapView({ places }: Props) {
   return (
     <div
       ref={mapRef}
-      className="w-full h-[500px] rounded-2xl overflow-hidden border border-white/10"
+      className="
+        w-full
+        h-[500px]
+        rounded-2xl
+        overflow-hidden
+        border
+        border-white/10
+        shadow-2xl
+      "
     />
   )
 }
