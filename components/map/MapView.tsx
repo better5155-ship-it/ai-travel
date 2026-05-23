@@ -4,23 +4,30 @@ import { useEffect, useState } from 'react'
 import KakaoMapView from './KakaoMapView'
 import GoogleMapView from './GoogleMapView'
 
+const DAY_COLORS = [
+  "#4F46E5",
+  "#16A34A",
+  "#EA580C",
+  "#DB2777",
+  "#0EA5E9",
+  "#FACC15",
+  "#8B5CF6",
+]
+
 export default function MapView({ plan }: any) {
 
-  console.log("🔥 PLAN RECEIVED:", plan)
+  console.log("🔥 PLAN:", plan)
 
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
+
     const check = () => {
 
       const kakaoReady = typeof window !== "undefined" && (window as any).kakao
       const googleReady = typeof window !== "undefined" && (window as any).google
 
-      console.log("🔥 KAKAO READY:", kakaoReady)
-      console.log("🔥 GOOGLE READY:", googleReady)
-
       if (kakaoReady || googleReady) {
-        console.log("🔥 MAP SDK READY")
         setReady(true)
       } else {
         setTimeout(check, 300)
@@ -30,52 +37,44 @@ export default function MapView({ plan }: any) {
     check()
   }, [])
 
-  if (!plan) {
-    console.warn("🚨 PLAN IS NULL")
-    return null
-  }
-
-  if (!ready) {
-    console.log("⏳ WAITING FOR MAP SDK")
-    return <div className="h-[500px] bg-black/20 rounded-xl" />
-  }
+  if (!plan) return null
+  if (!ready) return <div className="h-[500px] bg-black/20 rounded-xl" />
 
   const region = plan?.region || "korea"
 
-  console.log("🔥 REGION:", region)
-  console.log("🔥 PLAN DAYS:", plan?.days)
-
   const places =
     Array.isArray(plan?.days)
-      ? plan.days.flatMap((d: any) => {
-          console.log("🔥 DAY:", d)
-          return d?.places || []
-        })
+      ? plan.days.flatMap((d: any) =>
+          (d?.places || []).map((p: any) => ({
+            ...p,
+            day: d.day
+          }))
+        )
       : []
 
-  console.log("🔥 FLATTEN PLACES:", places)
+  const validPlaces = places.filter((p: any) =>
+    p?.lat != null &&
+    p?.lng != null &&
+    !isNaN(Number(p.lat)) &&
+    !isNaN(Number(p.lng))
+  )
 
-  const validPlaces = places.filter((p: any) => {
-    const ok =
-      p?.lat != null &&
-      p?.lng != null &&
-      !isNaN(Number(p.lat)) &&
-      !isNaN(Number(p.lng))
-
-    if (!ok) {
-      console.warn("❌ INVALID PLACE:", p)
-    }
-
-    return ok
-  })
-
-  console.log("🔥 VALID PLACES:", validPlaces)
+  const colorByDay = (day: number) =>
+    DAY_COLORS[(day - 1) % DAY_COLORS.length]
 
   if (region === 'global') {
-    console.log("🌍 USING GOOGLE MAP")
-    return <GoogleMapView places={validPlaces} />
+    return (
+      <GoogleMapView
+        places={validPlaces}
+        colorByDay={colorByDay}
+      />
+    )
   }
 
-  console.log("🇰🇷 USING KAKAO MAP")
-  return <KakaoMapView places={validPlaces} />
+  return (
+    <KakaoMapView
+      places={validPlaces}
+      colorByDay={colorByDay}
+    />
+  )
 }

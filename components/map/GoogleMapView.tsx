@@ -2,49 +2,29 @@
 
 import { useEffect, useRef } from 'react'
 
-export default function GoogleMapView({ places }: any) {
+export default function GoogleMapView({ places, colorByDay }: any) {
 
   const mapRef = useRef<HTMLDivElement>(null)
-  const mapInstanceRef = useRef<any>(null)
 
   useEffect(() => {
 
-    const google = (window as any).google
+    const google = (window as any)?.google
+    if (!mapRef.current || !google) return
 
-    if (!google) {
-      console.warn("🚨 Google Maps SDK not loaded")
-      return
-    }
-
-    if (!mapRef.current) return
-    if (!(mapRef.current instanceof HTMLElement)) return
-
-    const validPlaces = (places || []).filter(
-      (p: any) => p?.lat != null && p?.lng != null
-    )
-
-    const center = validPlaces[0]
-      ? {
-          lat: Number(validPlaces[0].lat),
-          lng: Number(validPlaces[0].lng),
-        }
+    const center = places[0]
+      ? { lat: Number(places[0].lat), lng: Number(places[0].lng) }
       : { lat: 0, lng: 0 }
 
-    // 🔥 map은 1번만 생성
-    if (!mapInstanceRef.current) {
-      mapInstanceRef.current = new google.maps.Map(mapRef.current, {
-        center,
-        zoom: 12,
-      })
-    }
-
-    const map = mapInstanceRef.current
+    const map = new google.maps.Map(mapRef.current, {
+      center,
+      zoom: 12
+    })
 
     const bounds = new google.maps.LatLngBounds()
 
     let prev: any = null
 
-    validPlaces.forEach((p: any) => {
+    places.forEach((p: any) => {
 
       const pos = new google.maps.LatLng(
         Number(p.lat),
@@ -55,6 +35,18 @@ export default function GoogleMapView({ places }: any) {
         map,
         position: pos,
         title: p.name,
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: 8,
+          fillColor: colorByDay(p.day),
+          fillOpacity: 1,
+          strokeWeight: 1,
+          strokeColor: "#fff"
+        },
+        label: {
+          text: String(p.day),
+          color: "#fff"
+        }
       })
 
       bounds.extend(pos)
@@ -63,19 +55,19 @@ export default function GoogleMapView({ places }: any) {
         new google.maps.Polyline({
           map,
           path: [prev, pos],
-          strokeColor: "#4F46E5",
-          strokeWeight: 3,
+          strokeColor: colorByDay(p.day),
+          strokeWeight: 3
         })
       }
 
       prev = pos
     })
 
-    if (validPlaces.length > 0) {
+    if (places.length > 0) {
       map.fitBounds(bounds)
     }
 
-  }, [places])
+  }, [places, colorByDay])
 
   return (
     <div
