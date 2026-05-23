@@ -2,90 +2,78 @@
 
 import { useEffect, useRef } from 'react'
 
-export default function GoogleMapView({ places, colorByDay }: any) {
+export default function GoogleMapView({ places = [] }: any) {
 
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstance = useRef<any>(null)
 
   useEffect(() => {
 
-    const google = (window as any)?.google
-
-    if (!google || !google.maps) {
-      console.warn("🚨 Google Maps not ready")
-      return
-    }
-
     if (!mapRef.current) return
 
-    // 🔥 핵심 방어
-    if (!google.maps.LatLng) {
-      console.error("❌ Google Maps API corrupted")
-      return
-    }
+    const loadMap = () => {
 
-    const validPlaces = (places || []).filter(
-      (p: any) =>
-        p?.lat != null &&
-        p?.lng != null &&
-        !isNaN(Number(p.lat)) &&
-        !isNaN(Number(p.lng))
-    )
+      const google = (window as any)?.google
 
-    const center = validPlaces[0]
-      ? new google.maps.LatLng(
-          Number(validPlaces[0].lat),
-          Number(validPlaces[0].lng)
+      // 🔥 진짜 가드 (이거 중요)
+      if (!google?.maps?.Map || !google?.maps?.LatLng) {
+        console.warn("Google Maps not ready yet")
+        setTimeout(loadMap, 300)
+        return
+      }
+
+      const validPlaces = (places || [])
+        .map((p: any) => ({
+          lat: Number(p?.lat),
+          lng: Number(p?.lng),
+          name: p?.name
+        }))
+        .filter((p: any) =>
+          Number.isFinite(p.lat) &&
+          Number.isFinite(p.lng)
         )
-      : new google.maps.LatLng(37.5665, 126.9780)
 
-    // ✅ map 1번만 생성
-    if (!mapInstance.current) {
-      mapInstance.current = new google.maps.Map(mapRef.current, {
-        center,
-        zoom: 12,
-      })
-    }
+      if (validPlaces.length === 0) {
+        console.warn("No valid places")
+        return
+      }
 
-    const map = mapInstance.current
-
-    const bounds = new google.maps.LatLngBounds()
-
-    let prev: any = null
-
-    validPlaces.forEach((p: any) => {
-
-      // 🔥 여기 핵심 수정
-      const pos = new google.maps.LatLng(
-        Number(p.lat),
-        Number(p.lng)
+      const center = new google.maps.LatLng(
+        validPlaces[0].lat,
+        validPlaces[0].lng
       )
 
-      new google.maps.Marker({
-        map,
-        position: pos,
-        title: p.name,
-      })
-
-      bounds.extend(pos)
-
-      if (prev) {
-        new google.maps.Polyline({
-          map,
-          path: [prev, pos],
-          strokeColor: colorByDay?.(p.day) || "#4F46E5",
-          strokeWeight: 3,
+      // 🔥 중요: map은 1번만 생성
+      if (!mapInstance.current) {
+        mapInstance.current = new google.maps.Map(mapRef.current, {
+          center,
+          zoom: 12,
         })
       }
 
-      prev = pos
-    })
+      const map = mapInstance.current
 
-    if (validPlaces.length > 0) {
+      const bounds = new google.maps.LatLngBounds()
+
+      validPlaces.forEach((p: any) => {
+
+        const pos = new google.maps.LatLng(p.lat, p.lng)
+
+        new google.maps.Marker({
+          map,
+          position: pos,
+          title: p.name,
+        })
+
+        bounds.extend(pos)
+      })
+
       map.fitBounds(bounds)
     }
 
-  }, [places, colorByDay])
+    loadMap()
+
+  }, [places])
 
   return (
     <div
