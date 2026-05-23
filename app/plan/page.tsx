@@ -5,52 +5,55 @@ import MapView from '@/components/map/MapView'
 
 export default function PlanPage() {
 
-  const [plan, setPlan] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [plan, setPlan] = useState<any>(null)
 
   useEffect(() => {
 
     const destination = sessionStorage.getItem("destination")
-    const days = Number(sessionStorage.getItem("days") || 3)
+    const days = sessionStorage.getItem("days")
 
-    if (!destination) return
+    console.log("DEST:", destination)
+    console.log("DAYS:", days)
 
-    const fetchPlan = async () => {
+    // 👉 일단 UI 테스트용 mock
+    setTimeout(() => {
 
-      try {
+      setPlan({
+        destination,
+        region: "korea",
+        days: [
+          {
+            day: 1,
+            places: [
+              { name: "Seoul Station", lat: 37.556, lng: 126.972 }
+            ]
+          }
+        ]
+      })
 
-        const res = await fetch("/api/plan", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ destination, days })
-        })
+      setLoading(false)
 
-        const data = await res.json()
-        setPlan(data)
-
-      } catch (err) {
-        console.error(err)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchPlan()
+    }, 800)
 
   }, [])
 
   return (
     <div className="min-h-screen bg-black text-white p-6">
 
+      <h1 className="text-2xl mb-4">
+        Travel Plan
+      </h1>
+
       {loading && (
         <div className="h-[500px] flex items-center justify-center">
-          Loading...
+          Loading itinerary...
         </div>
       )}
 
-      {!loading && <MapView plan={plan} />}
+      {!loading && plan && (
+        <MapView plan={plan} />
+      )}
 
     </div>
   )

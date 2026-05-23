@@ -1,6 +1,6 @@
 export default function Hero() {
   return (
-    <div className="text-center space-y-3">
+    <div className="text-center space-y-2">
       <h1 className="text-4xl font-bold">
         AI Travel Planner
       </h1>

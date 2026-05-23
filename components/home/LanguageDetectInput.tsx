@@ -2,37 +2,23 @@
 
 import { useState } from 'react'
 
-function detectLanguage(text: string) {
-  const koreanRegex = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/
-  return koreanRegex.test(text) ? "ko" : "en"
-}
-
 export default function LanguageDetectInput({
   onSubmit
-}: {
-  onSubmit: (destination: string, days: number) => void
-}) {
+}: any) {
 
   const [destination, setDestination] = useState('')
   const [days, setDays] = useState(3)
 
-  const lang = detectLanguage(destination)
-
   return (
-    <div className="space-y-4 w-full max-w-md">
+    <div className="w-full max-w-md space-y-4">
 
-      {/* 입력 */}
+      {/* input */}
       <input
         value={destination}
         onChange={(e) => setDestination(e.target.value)}
-        placeholder="서울 / Seoul / Tokyo"
+        placeholder="서울 / Tokyo / Paris"
         className="w-full p-3 rounded bg-white/10"
       />
-
-      {/* 언어 표시 */}
-      <p className="text-sm text-white/50">
-        Detected language: {lang}
-      </p>
 
       {/* days */}
       <select
@@ -47,7 +33,7 @@ export default function LanguageDetectInput({
         ))}
       </select>
 
-      {/* 버튼 */}
+      {/* button */}
       <button
         onClick={() => onSubmit(destination, days)}
         disabled={!destination}

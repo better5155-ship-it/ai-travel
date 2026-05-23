@@ -1,8 +1,8 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import Hero from '@/components/home/Hero'
 import LanguageDetectInput from '@/components/home/LanguageDetectInput'
+import { useRouter } from 'next/navigation'
 
 export default function Home() {
 
@@ -10,7 +10,6 @@ export default function Home() {
 
   const handleSubmit = (destination: string, days: number) => {
 
-    // 👉 plan 페이지로 state 전달 (query 제거)
     sessionStorage.setItem("destination", destination)
     sessionStorage.setItem("days", String(days))
 
@@ -18,7 +17,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white space-y-8">
 
       <Hero />
 
