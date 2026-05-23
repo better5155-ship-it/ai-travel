@@ -1,24 +1,30 @@
 'use client'
 
-import { useState } from 'react'
-import PlanForm from '@/components/planner/PlanForm'
-import MapView from '@/components/map/MapView'
+import { useRouter } from 'next/navigation'
+import Hero from '@/components/home/Hero'
+import LanguageDetectInput from '@/components/home/LanguageDetectInput'
 
-export default function Page() {
+export default function HomePage() {
 
-  const [plan, setPlan] = useState<any>(null)
+  const router = useRouter()
+
+  const handleSubmit = (destination: string, days: number) => {
+
+    // plan 페이지로 이동하면서 값 전달
+    router.push(
+      `/plan?destination=${encodeURIComponent(destination)}&days=${days}`
+    )
+  }
 
   return (
-    <div className="p-6 bg-black text-white">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white px-4">
 
-      <h1 className="text-2xl mb-4">
-        AI Travel Planner
-      </h1>
+      {/* 타이틀 */}
+      <Hero />
 
-      <PlanForm onResult={setPlan} />
-
-      <div className="mt-6">
-        <MapView plan={plan} />
+      {/* 입력 UI */}
+      <div className="mt-10 w-full flex justify-center">
+        <LanguageDetectInput onSubmit={handleSubmit} />
       </div>
 
     </div>

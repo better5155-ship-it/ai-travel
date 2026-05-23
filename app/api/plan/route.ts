@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server"
+import { detectLanguage } from "@/lib/utils/language"
 
 export async function POST(req: Request) {
 
   const { destination, days } = await req.json()
+
+  const lang = detectLanguage(destination)
 
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
@@ -15,15 +18,21 @@ export async function POST(req: Request) {
       messages: [{
         role: "user",
         content: `
-Return ONLY JSON.
+You are a travel planner.
 
-destination: ${destination}
-days: ${days}
+Language: ${lang}
+
+RULES:
+- If lang is "ko", respond in Korean names
+- If lang is "en", respond in English names
+
+Return ONLY JSON.
 
 FORMAT:
 {
   "destination": "${destination}",
   "region": "korea or global",
+  "language": "${lang}",
   "days": [
     {
       "day": 1,
@@ -37,10 +46,6 @@ FORMAT:
     }
   ]
 }
-
-Rules:
-- real places
-- valid lat/lng
 `
       }]
     })
