@@ -1,24 +1,19 @@
 'use client'
 
-import KakaoMap from './KakaoMap'
-import GoogleMap from './GoogleMap'
+import { useEffect } from 'react'
 
 export default function MapView({ plan }: any) {
 
-  if (!plan) {
-    return (
-      <div className="h-[500px] bg-white/5 rounded-xl flex items-center justify-center">
-        No map data
-      </div>
-    )
-  }
+  useEffect(() => {
+    console.log("MAP PLAN:", plan)
+  }, [plan])
 
-  const places =
-    plan?.days?.flatMap((d: any) => d.places) || []
+  if (!plan) return <div className="text-white">NO PLAN</div>
+  if (!Array.isArray(plan.days)) return <div className="text-white">INVALID PLAN</div>
 
-  if (plan.region === "global") {
-    return <GoogleMap places={places} />
-  }
-
-  return <KakaoMap places={places} />
+  return (
+    <div className="h-[500px] flex items-center justify-center text-white">
+      MAP SAFE MODE
+    </div>
+  )
 }
