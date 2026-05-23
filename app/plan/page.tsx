@@ -41,7 +41,7 @@ export default function PlanPage() {
         className="absolute inset-0 bg-cover bg-center opacity-30"
         style={{
           backgroundImage:
-            "url('https://images.unsplash.com/photo-1526772662000-3f88f10405ff?auto=format&fit=crop&w=1600&q=80')"
+            "url('https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1')"
         }}
       />
 

@@ -24,7 +24,7 @@ export default function Home() {
         className="absolute inset-0 bg-cover bg-center"
         style={{
           backgroundImage:
-            "url('https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=1600&q=80')"
+            "url('https://images.unsplash.com/photo-1469474968028-56623f02e42e')"
         }}
       />
 
