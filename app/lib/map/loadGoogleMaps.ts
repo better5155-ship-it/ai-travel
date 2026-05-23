@@ -15,7 +15,7 @@ export function loadGoogleMaps() {
     const script = document.createElement("script")
 
     script.src =
-      "https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_KEY"
+      "https://maps.googleapis.com/maps/api/js?key=AIzaSyBdgkfJ9uOHwg3NfTI8RjiX_GavgPjplgg"
 
     script.async = true
     script.onload = () => {

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { loadGoogleMaps } from '../../lib/map/loadGoogleMaps'
+import { loadGoogleMaps } from '@/app/lib/map/loadGoogleMaps'
 
 export default function GoogleMapView({ places = [] }: any) {
 
