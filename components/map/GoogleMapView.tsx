@@ -11,58 +11,46 @@ export default function GoogleMapView({ places = [] }: any) {
 
     if (!mapRef.current) return
 
-    const loadMap = () => {
+    const init = () => {
 
-      const google = (window as any)?.google
+      const google = (window as any).google
 
-      // 🔥 진짜 가드 (이거 중요)
-      if (!google?.maps?.Map || !google?.maps?.LatLng) {
-        console.warn("Google Maps not ready yet")
-        setTimeout(loadMap, 300)
+      if (!google?.maps) {
+        console.warn("Google not ready")
+        setTimeout(init, 300)
         return
       }
 
-      const validPlaces = (places || [])
+      const safePlaces = (places || [])
         .map((p: any) => ({
-          lat: Number(p?.lat),
-          lng: Number(p?.lng),
-          name: p?.name
+          lat: Number(p.lat),
+          lng: Number(p.lng),
+          name: p.name
         }))
         .filter((p: any) =>
           Number.isFinite(p.lat) &&
           Number.isFinite(p.lng)
         )
 
-      if (validPlaces.length === 0) {
-        console.warn("No valid places")
-        return
-      }
+      if (safePlaces.length === 0) return
 
-      const center = new google.maps.LatLng(
-        validPlaces[0].lat,
-        validPlaces[0].lng
-      )
-
-      // 🔥 중요: map은 1번만 생성
       if (!mapInstance.current) {
         mapInstance.current = new google.maps.Map(mapRef.current, {
-          center,
+          center: safePlaces[0],
           zoom: 12,
         })
       }
 
       const map = mapInstance.current
-
       const bounds = new google.maps.LatLngBounds()
 
-      validPlaces.forEach((p: any) => {
+      safePlaces.forEach((p: any) => {
 
         const pos = new google.maps.LatLng(p.lat, p.lng)
 
         new google.maps.Marker({
           map,
           position: pos,
-          title: p.name,
         })
 
         bounds.extend(pos)
@@ -71,14 +59,11 @@ export default function GoogleMapView({ places = [] }: any) {
       map.fitBounds(bounds)
     }
 
-    loadMap()
+    init()
 
   }, [places])
 
   return (
-    <div
-      ref={mapRef}
-      className="w-full h-[500px] rounded-2xl"
-    />
+    <div ref={mapRef} className="w-full h-[500px]" />
   )
 }
