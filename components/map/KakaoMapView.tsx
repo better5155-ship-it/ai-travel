@@ -9,11 +9,29 @@ export default function KakaoMapView({ places, colorByDay }: any) {
   useEffect(() => {
 
     const kakao = (window as any)?.kakao
-    if (!mapRef.current || !kakao) return
+    if (!mapRef.current || !kakao?.maps) return
 
-    const center = places[0]
-      ? new kakao.maps.LatLng(places[0].lat, places[0].lng)
-      : new kakao.maps.LatLng(37.5665, 126.9780)
+    // 🔥 핵심 안전 필터 (Google과 동일 수준으로 맞춤)
+    const validPlaces = (places || [])
+      .map((p: any) => ({
+        ...p,
+        lat: Number(String(p?.lat).trim()),
+        lng: Number(String(p?.lng).trim()),
+      }))
+      .filter((p: any) =>
+        Number.isFinite(p.lat) &&
+        Number.isFinite(p.lng)
+      )
+
+    if (validPlaces.length === 0) {
+      console.warn("🚨 KakaoMapView: no valid places")
+      return
+    }
+
+    const center = new kakao.maps.LatLng(
+      validPlaces[0].lat,
+      validPlaces[0].lng
+    )
 
     const map = new kakao.maps.Map(mapRef.current, {
       center,
@@ -24,7 +42,7 @@ export default function KakaoMapView({ places, colorByDay }: any) {
 
     let prev: any = null
 
-    places.forEach((p: any) => {
+    validPlaces.forEach((p: any) => {
 
       const pos = new kakao.maps.LatLng(p.lat, p.lng)
 
@@ -41,7 +59,7 @@ export default function KakaoMapView({ places, colorByDay }: any) {
           map,
           path: [prev, pos],
           strokeWeight: 3,
-          strokeColor: colorByDay(p.day),
+          strokeColor: colorByDay?.(p.day) || "#4F46E5",
           strokeOpacity: 0.8
         })
       }
@@ -49,9 +67,7 @@ export default function KakaoMapView({ places, colorByDay }: any) {
       prev = pos
     })
 
-    if (places.length > 0) {
-      map.setBounds(bounds)
-    }
+    map.setBounds(bounds)
 
   }, [places, colorByDay])
 
