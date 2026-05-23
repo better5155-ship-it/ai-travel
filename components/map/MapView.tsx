@@ -42,30 +42,27 @@ export default function MapView({ plan }: any) {
 
   const region = plan?.region || "korea"
 
-  // 🔥 1차 flatten + 안전 변환 (핵심 수정)
-  const places =
+  // 🔥 1차 flatten (변환 최소화)
+  const rawPlaces =
     Array.isArray(plan?.days)
       ? plan.days.flatMap((d: any) =>
-          (d?.places || []).map((p: any) => ({
-            name: p?.name || "",
-            description: p?.description || "",
-            day: d?.day,
-
-            // 🔥 핵심: 무조건 숫자 변환
-            lat: Number(String(p?.lat).trim()),
-            lng: Number(String(p?.lng).trim()),
-          }))
+          Array.isArray(d?.places) ? d.places : []
         )
       : []
 
-  // 🔥 2차 validation (Google crash 방지 핵심)
-  const validPlaces = places.filter((p: any) => {
+  // 🔥 2차: "검증만" 수행 (변환 금지)
+  const validPlaces = rawPlaces.filter((p: any) => {
+
+    const lat = p?.lat
+    const lng = p?.lng
 
     const isValid =
-      Number.isFinite(p.lat) &&
-      Number.isFinite(p.lng) &&
-      Math.abs(p.lat) > 0 &&
-      Math.abs(p.lng) > 0
+      lat !== null &&
+      lat !== undefined &&
+      lng !== null &&
+      lng !== undefined &&
+      !isNaN(Number(lat)) &&
+      !isNaN(Number(lng))
 
     if (!isValid) {
       console.warn("❌ INVALID PLACE FILTERED:", p)
@@ -79,7 +76,6 @@ export default function MapView({ plan }: any) {
   const colorByDay = (day: number) =>
     DAY_COLORS[(day - 1) % DAY_COLORS.length]
 
-  // 🔥 안전 fallback
   if (validPlaces.length === 0) {
     return (
       <div className="h-[500px] bg-red-500/10 flex items-center justify-center">
