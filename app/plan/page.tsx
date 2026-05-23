@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 
-// 🚨 중요: 지도는 SSR 완전 차단
+// 🚨 Map SSR 완전 차단
 const MapView = dynamic(
   () => import('@/components/map/MapView'),
   { ssr: false }
@@ -13,43 +13,47 @@ export default function PlanPage() {
 
   const [plan, setPlan] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [destination, setDestination] = useState<string | null>(null)
-  const [days, setDays] = useState<number>(3)
 
-  // 🚨 client-only 데이터 로딩 (SSR 방지 핵심)
+  const destinationRef = useRef<string | null>(null)
+  const daysRef = useRef<number>(3)
+
+  // 🚨 1. sessionStorage는 무조건 client only
   useEffect(() => {
 
     if (typeof window === 'undefined') return
 
-    const savedDestination = sessionStorage.getItem("destination")
-    const savedDays = sessionStorage.getItem("days")
+    destinationRef.current = sessionStorage.getItem("destination")
+    daysRef.current = Number(sessionStorage.getItem("days") || 3)
 
-    console.log("DEST:", savedDestination)
-    console.log("DAYS:", savedDays)
-
-    setDestination(savedDestination)
-    setDays(Number(savedDays || 3))
+    console.log("DEST:", destinationRef.current)
+    console.log("DAYS:", daysRef.current)
 
   }, [])
 
-  // 🚨 API 호출 분리 (destination 세팅 이후 실행)
+  // 🚨 2. API 호출 LOCK (rate limit 핵심 해결)
+  const hasFetched = useRef(false)
+
   useEffect(() => {
 
-    if (!destination) {
-      setLoading(false)
-      return
-    }
+    if (hasFetched.current) return
+    if (!destinationRef.current) return
+
+    hasFetched.current = true
 
     const fetchPlan = async () => {
 
       try {
 
+        setLoading(true)
+
         const res = await fetch("/api/plan", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json"
+          },
           body: JSON.stringify({
-            destination,
-            days
+            destination: destinationRef.current,
+            days: daysRef.current
           })
         })
 
@@ -68,13 +72,14 @@ export default function PlanPage() {
 
     fetchPlan()
 
-  }, [destination, days])
+  }, [])
 
   return (
     <div className="relative min-h-screen text-white overflow-hidden">
 
       {/* 🌍 BACKGROUND */}
-      <div className="absolute inset-0 bg-cover bg-center"
+      <div
+        className="absolute inset-0 bg-cover bg-center"
         style={{
           backgroundImage:
             "url('https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&w=1600&q=80')"
@@ -98,7 +103,7 @@ export default function PlanPage() {
           </div>
         )}
 
-        {/* NO DATA */}
+        {/* ERROR */}
         {!loading && !plan && (
           <div className="h-[500px] flex items-center justify-center text-red-400">
             Failed to generate plan
