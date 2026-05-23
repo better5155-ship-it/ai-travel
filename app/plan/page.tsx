@@ -11,12 +11,7 @@ export default function PlanPage() {
   useEffect(() => {
 
     const destination = sessionStorage.getItem("destination")
-    const days = sessionStorage.getItem("days")
 
-    console.log("DEST:", destination)
-    console.log("DAYS:", days)
-
-    // 👉 일단 UI 테스트용 mock
     setTimeout(() => {
 
       setPlan({
@@ -39,21 +34,38 @@ export default function PlanPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-black text-white p-6">
+    <div className="relative min-h-screen text-white p-6">
 
-      <h1 className="text-2xl mb-4">
-        Travel Plan
-      </h1>
+      {/* 🌍 map-style background */}
+      <div
+        className="absolute inset-0 bg-cover bg-center opacity-30"
+        style={{
+          backgroundImage:
+            "url('https://images.unsplash.com/photo-1526772662000-3f88f10405ff?auto=format&fit=crop&w=1600&q=80')"
+        }}
+      />
 
-      {loading && (
-        <div className="h-[500px] flex items-center justify-center">
-          Loading itinerary...
-        </div>
-      )}
+      {/* overlay */}
+      <div className="absolute inset-0 bg-black/70" />
 
-      {!loading && plan && (
-        <MapView plan={plan} />
-      )}
+      {/* content */}
+      <div className="relative z-10">
+
+        <h1 className="text-2xl mb-4">
+          Travel Plan
+        </h1>
+
+        {loading && (
+          <div className="h-[500px] flex items-center justify-center">
+            Loading itinerary...
+          </div>
+        )}
+
+        {!loading && plan && (
+          <MapView plan={plan} />
+        )}
+
+      </div>
 
     </div>
   )

@@ -17,11 +17,28 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white space-y-8">
+    <div className="relative min-h-screen flex flex-col items-center justify-center text-white">
 
-      <Hero />
+      {/* 🌍 free travel background */}
+      <div
+        className="absolute inset-0 bg-cover bg-center"
+        style={{
+          backgroundImage:
+            "url('https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=1600&q=80')"
+        }}
+      />
 
-      <LanguageDetectInput onSubmit={handleSubmit} />
+      {/* dark overlay */}
+      <div className="absolute inset-0 bg-black/60" />
+
+      {/* content */}
+      <div className="relative z-10 flex flex-col items-center space-y-8">
+
+        <Hero />
+
+        <LanguageDetectInput onSubmit={handleSubmit} />
+
+      </div>
 
     </div>
   )
