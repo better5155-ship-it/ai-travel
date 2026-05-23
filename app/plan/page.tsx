@@ -1,9 +1,8 @@
 'use client'
 
-import { useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import MapView from '@/components/map/MapView'
-import PlanForm from '@/components/planner/PlanForm'
 
 export default function PlanPage() {
 
@@ -13,32 +12,53 @@ export default function PlanPage() {
   const days = Number(params.get("days") || 3)
 
   const [plan, setPlan] = useState<any>(null)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
 
+    if (!destination) return
+
     const fetchPlan = async () => {
 
-      const res = await fetch("/api/plan", {
-        method: "POST",
-        body: JSON.stringify({ destination, days })
-      })
+      try {
+        setLoading(true)
 
-      const data = await res.json()
-      setPlan(data)
+        const res = await fetch("/api/plan", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ destination, days })
+        })
+
+        const data = await res.json()
+        setPlan(data)
+
+      } catch (err) {
+        console.error("PLAN ERROR:", err)
+      } finally {
+        setLoading(false)
+      }
     }
 
-    if (destination) fetchPlan()
+    fetchPlan()
 
   }, [destination, days])
 
   return (
-    <div className="p-6 bg-black text-white">
+    <div className="min-h-screen bg-black text-white p-6">
 
-      <h2 className="text-xl mb-4">
+      <h1 className="text-2xl mb-4">
         {destination}
-      </h2>
+      </h1>
 
-      <MapView plan={plan} />
+      {loading && (
+        <div className="h-[500px] flex items-center justify-center">
+          Loading map...
+        </div>
+      )}
+
+      {!loading && <MapView plan={plan} />}
 
     </div>
   )
