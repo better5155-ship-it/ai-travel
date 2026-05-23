@@ -4,28 +4,25 @@ import { useRouter } from 'next/navigation'
 import Hero from '@/components/home/Hero'
 import LanguageDetectInput from '@/components/home/LanguageDetectInput'
 
-export default function HomePage() {
+export default function Home() {
 
   const router = useRouter()
 
   const handleSubmit = (destination: string, days: number) => {
 
-    // plan 페이지로 이동하면서 값 전달
-    router.push(
-      `/plan?destination=${encodeURIComponent(destination)}&days=${days}`
-    )
+    // 👉 plan 페이지로 state 전달 (query 제거)
+    sessionStorage.setItem("destination", destination)
+    sessionStorage.setItem("days", String(days))
+
+    router.push("/plan")
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white">
 
-      {/* 타이틀 */}
       <Hero />
 
-      {/* 입력 UI */}
-      <div className="mt-10 w-full flex justify-center">
-        <LanguageDetectInput onSubmit={handleSubmit} />
-      </div>
+      <LanguageDetectInput onSubmit={handleSubmit} />
 
     </div>
   )

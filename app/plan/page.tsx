@@ -1,27 +1,23 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
 import MapView from '@/components/map/MapView'
 
 export default function PlanPage() {
 
-  const params = useSearchParams()
-
-  const destination = params.get("destination") || ""
-  const days = Number(params.get("days") || 3)
-
   const [plan, setPlan] = useState<any>(null)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+
+    const destination = sessionStorage.getItem("destination")
+    const days = Number(sessionStorage.getItem("days") || 3)
 
     if (!destination) return
 
     const fetchPlan = async () => {
 
       try {
-        setLoading(true)
 
         const res = await fetch("/api/plan", {
           method: "POST",
@@ -35,7 +31,7 @@ export default function PlanPage() {
         setPlan(data)
 
       } catch (err) {
-        console.error("PLAN ERROR:", err)
+        console.error(err)
       } finally {
         setLoading(false)
       }
@@ -43,18 +39,14 @@ export default function PlanPage() {
 
     fetchPlan()
 
-  }, [destination, days])
+  }, [])
 
   return (
     <div className="min-h-screen bg-black text-white p-6">
 
-      <h1 className="text-2xl mb-4">
-        {destination}
-      </h1>
-
       {loading && (
         <div className="h-[500px] flex items-center justify-center">
-          Loading map...
+          Loading...
         </div>
       )}
 
