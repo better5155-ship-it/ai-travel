@@ -10,12 +10,22 @@ export default function GoogleMapView({ places }: any) {
 
     const google = (window as any).google
 
-    if (!mapRef.current || !google) return
+    if (!mapRef.current) return
+    if (!google) {
+      console.warn("🚨 Google Maps SDK not loaded")
+      return
+    }
+
+    const validPlaces = (places || []).filter(
+      (p: any) => p?.lat && p?.lng
+    )
+
+    const center = validPlaces[0]
+      ? { lat: Number(validPlaces[0].lat), lng: Number(validPlaces[0].lng) }
+      : { lat: 0, lng: 0 }
 
     const map = new google.maps.Map(mapRef.current, {
-      center: places?.[0]
-        ? { lat: places[0].lat, lng: places[0].lng }
-        : { lat: 0, lng: 0 },
+      center,
       zoom: 12,
     })
 
@@ -23,11 +33,12 @@ export default function GoogleMapView({ places }: any) {
 
     let prev: any = null
 
-    places.forEach((p: any) => {
+    validPlaces.forEach((p: any) => {
 
-      if (!p.lat || !p.lng) return
-
-      const pos = new google.maps.LatLng(p.lat, p.lng)
+      const pos = new google.maps.LatLng(
+        Number(p.lat),
+        Number(p.lng)
+      )
 
       new google.maps.Marker({
         map,
@@ -49,11 +60,16 @@ export default function GoogleMapView({ places }: any) {
       prev = pos
     })
 
-    if (places.length > 0) {
+    if (validPlaces.length > 0) {
       map.fitBounds(bounds)
     }
 
   }, [places])
 
-  return <div ref={mapRef} className="w-full h-[500px]" />
+  return (
+    <div
+      ref={mapRef}
+      className="w-full h-[500px] rounded-2xl"
+    />
+  )
 }
