@@ -17,22 +17,22 @@ export default function Home() {
   }
 
   return (
-    <div className="relative min-h-screen flex flex-col items-center justify-center text-white">
+    <div className="relative min-h-screen overflow-hidden">
 
-      {/* 🌍 free travel background */}
+      {/* 🔥 BACKGROUND */}
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{
           backgroundImage:
-            "url('https://images.unsplash.com/photo-1469474968028-56623f02e42e')"
+            "url('https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1600&q=80')"
         }}
       />
 
-      {/* dark overlay */}
+      {/* DARK OVERLAY */}
       <div className="absolute inset-0 bg-black/60" />
 
-      {/* content */}
-      <div className="relative z-10 flex flex-col items-center space-y-8">
+      {/* CONTENT */}
+      <div className="relative z-10 min-h-screen flex flex-col items-center justify-center text-white space-y-8">
 
         <Hero />
 

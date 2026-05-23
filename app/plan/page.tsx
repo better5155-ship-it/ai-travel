@@ -5,8 +5,8 @@ import MapView from '@/components/map/MapView'
 
 export default function PlanPage() {
 
-  const [loading, setLoading] = useState(true)
   const [plan, setPlan] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
 
@@ -29,39 +29,37 @@ export default function PlanPage() {
 
       setLoading(false)
 
-    }, 800)
+    }, 500)
 
   }, [])
 
   return (
-    <div className="relative min-h-screen text-white p-6">
+    <div className="relative min-h-screen overflow-hidden">
 
-      {/* 🌍 map-style background */}
+      {/* BACKGROUND */}
       <div
         className="absolute inset-0 bg-cover bg-center opacity-30"
         style={{
           backgroundImage:
-            "url('https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1')"
+            "url('https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&w=1600&q=80')"
         }}
       />
 
-      {/* overlay */}
+      {/* OVERLAY */}
       <div className="absolute inset-0 bg-black/70" />
 
-      {/* content */}
-      <div className="relative z-10">
+      {/* CONTENT */}
+      <div className="relative z-10 p-6 text-white">
 
         <h1 className="text-2xl mb-4">
           Travel Plan
         </h1>
 
-        {loading && (
+        {loading ? (
           <div className="h-[500px] flex items-center justify-center">
-            Loading itinerary...
+            Loading...
           </div>
-        )}
-
-        {!loading && plan && (
+        ) : (
           <MapView plan={plan} />
         )}
 
