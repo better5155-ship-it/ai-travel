@@ -2,39 +2,20 @@
 
 import { useEffect, useRef } from 'react'
 
-export default function KakaoMapView({ places, colorByDay }: any) {
+export default function KakaoMapView({ places }: any) {
 
   const mapRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
 
     const kakao = (window as any)?.kakao
-    if (!mapRef.current || !kakao?.maps) return
-
-    // 🔥 핵심 안전 필터 (Google과 동일 수준으로 맞춤)
-    const validPlaces = (places || [])
-      .map((p: any) => ({
-        ...p,
-        lat: Number(String(p?.lat).trim()),
-        lng: Number(String(p?.lng).trim()),
-      }))
-      .filter((p: any) =>
-        Number.isFinite(p.lat) &&
-        Number.isFinite(p.lng)
-      )
-
-    if (validPlaces.length === 0) {
-      console.warn("🚨 KakaoMapView: no valid places")
-      return
-    }
-
-    const center = new kakao.maps.LatLng(
-      validPlaces[0].lat,
-      validPlaces[0].lng
-    )
+    if (!mapRef.current || !kakao) return
 
     const map = new kakao.maps.Map(mapRef.current, {
-      center,
+      center: new kakao.maps.LatLng(
+        Number(places?.[0]?.lat || 37.5665),
+        Number(places?.[0]?.lng || 126.9780)
+      ),
       level: 5
     })
 
@@ -42,9 +23,15 @@ export default function KakaoMapView({ places, colorByDay }: any) {
 
     let prev: any = null
 
-    validPlaces.forEach((p: any) => {
+    places.forEach((p: any) => {
 
-      const pos = new kakao.maps.LatLng(p.lat, p.lng)
+      // 🔥 안전 변환 (핵심)
+      const lat = Number(p?.lat)
+      const lng = Number(p?.lng)
+
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return
+
+      const pos = new kakao.maps.LatLng(lat, lng)
 
       new kakao.maps.Marker({
         map,
@@ -59,7 +46,7 @@ export default function KakaoMapView({ places, colorByDay }: any) {
           map,
           path: [prev, pos],
           strokeWeight: 3,
-          strokeColor: colorByDay?.(p.day) || "#4F46E5",
+          strokeColor: "#4F46E5",
           strokeOpacity: 0.8
         })
       }
@@ -67,9 +54,11 @@ export default function KakaoMapView({ places, colorByDay }: any) {
       prev = pos
     })
 
-    map.setBounds(bounds)
+    if (places.length > 0) {
+      map.setBounds(bounds)
+    }
 
-  }, [places, colorByDay])
+  }, [places])
 
   return (
     <div

@@ -1,66 +1,48 @@
-export async function searchPlaces(keyword: string): Promise<any[]> {
+export async function searchPlaces(keyword: string, fallback?: any) {
 
-  const cleanKeyword = keyword
-    .replace(/\(.*?\)/g, '')
-    .replace(/-.*/g, '')
-    .trim()
+  return new Promise((resolve) => {
 
-  // 🌍 Google fallback
-  const googleSearch = async (): Promise<any[]> => {
+    const waitForKakao = () => {
 
-    const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(cleanKeyword)}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY}`
-
-    try {
-      const res = await fetch(url)
-      const data = await res.json()
-
-      return (data.results || []).map((p: any) => ({
-        place_name: p.name,
-        address_name: p.formatted_address,
-        x: p.geometry.location.lng,
-        y: p.geometry.location.lat,
-      }))
-    } catch {
-      return []
-    }
-  }
-
-  // 🇰🇷 Kakao search
-  const kakaoSearch = (): Promise<any[]> => {
-    return new Promise((res) => {
+      if (
+        typeof window === 'undefined' ||
+        !(window as any).kakao
+      ) {
+        setTimeout(waitForKakao, 300)
+        return
+      }
 
       const kakao = (window as any).kakao
-      if (!kakao) return res([])
 
       kakao.maps.load(() => {
+
         const ps = new kakao.maps.services.Places()
 
-        ps.keywordSearch(cleanKeyword, (data: any, status: any) => {
+        const searchKeyword = `${keyword} 관광지`
 
-          if (status === kakao.maps.services.Status.OK) {
-            res(data)
-          } else {
-            res([])
+        ps.keywordSearch(searchKeyword, (data: any, status: any) => {
+
+          // ✅ 성공
+          if (status === kakao.maps.services.Status.OK && data?.length) {
+            resolve(data)
+            return
           }
 
+          // 🚨 실패 → fallback 그대로 반환 (핵심)
+          console.warn("Kakao search failed:", keyword)
+
+          if (fallback) {
+            resolve([fallback])
+            return
+          }
+
+          resolve([])
         })
+
       })
-    })
-  }
 
-  // 🔥 핵심 FIX: 타입 명시
-  let result: any[] = []
+    }
 
-  const isKoreaQuery =
-    /korea|seoul|busan|jeju|한국|서울|부산|제주/i.test(cleanKeyword)
-
-  if (isKoreaQuery) {
-    result = await kakaoSearch()
-  }
-
-  if (!result || result.length === 0) {
-    result = await googleSearch()
-  }
-
-  return result
+    waitForKakao()
+  })
 }
