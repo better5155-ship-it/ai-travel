@@ -3,7 +3,7 @@
 import { useState } from "react"
 
 import KakaoLoader from "../../components/map/KakaoLoader"
-import PlanForm from "../../components/planner/PlanForm"
+import PlanForm from "@/components/planner/PlanForm"
 import PlanResult from "../../components/planner/PlanResult"
 import MapView from "../../components/map/MapView"
 

@@ -1,28 +1,74 @@
-const enrichedDays = await Promise.all(
-  aiPlan.days.map(async (day: any) => {
+'use client'
 
-    const places = await Promise.all(
-      day.places.map(async (p: any) => {
+import { useState } from 'react'
 
-        const result: any = await searchPlaces(p.name, p)
+export default function PlanForm({ onResult }: any) {
 
-        const place = result?.[0]
+  const [destination, setDestination] = useState('')
+  const [days, setDays] = useState(3)
+  const [loading, setLoading] = useState(false)
 
-        if (!place) return null
+  const handleSubmit = async () => {
 
-        return {
-          name: p.name,
-          description: p.description,
-          address: place.address_name,
-          lat: Number(place.y ?? p.lat),
-          lng: Number(place.x ?? p.lng),
-        }
+    if (!destination) return alert("Enter destination")
+
+    try {
+      setLoading(true)
+
+      const res = await fetch("/api/plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ destination, days })
       })
-    )
 
-    return {
-      day: day.day,
-      places: places.filter(Boolean)
+      const data = await res.json()
+
+      if (!res.ok || data?.error) {
+        console.error("API FAILED:", data)
+        alert("AI plan generation failed")
+        return
+      }
+
+      onResult(data)
+
+    } catch (err) {
+      console.error(err)
+      alert("AI plan generation failed")
+    } finally {
+      setLoading(false)
     }
-  })
-)
+  }
+
+  return (
+    <div className="space-y-5">
+
+      <input
+        value={destination}
+        onChange={(e) => setDestination(e.target.value)}
+        className="w-full p-4 rounded-xl bg-black/30 border border-white/10"
+        placeholder="Destination"
+      />
+
+      <select
+        value={days}
+        onChange={(e) => setDays(Number(e.target.value))}
+        className="w-full p-4 rounded-xl bg-black/30 border border-white/10"
+      >
+        {Array.from({ length: 14 }).map((_, i) => (
+          <option key={i + 1} value={i + 1}>
+            {i + 1} Days
+          </option>
+        ))}
+      </select>
+
+      <button
+        onClick={handleSubmit}
+        disabled={loading}
+        className="w-full bg-white text-black py-4 rounded-xl"
+      >
+        {loading ? "Loading..." : "Generate Plan"}
+      </button>
+
+    </div>
+  )
+}
