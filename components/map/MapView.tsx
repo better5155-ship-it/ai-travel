@@ -42,25 +42,51 @@ export default function MapView({ plan }: any) {
 
   const region = plan?.region || "korea"
 
+  // 🔥 1차 flatten + 안전 변환 (핵심 수정)
   const places =
     Array.isArray(plan?.days)
       ? plan.days.flatMap((d: any) =>
           (d?.places || []).map((p: any) => ({
-            ...p,
-            day: d.day
+            name: p?.name || "",
+            description: p?.description || "",
+            day: d?.day,
+
+            // 🔥 핵심: 무조건 숫자 변환
+            lat: Number(String(p?.lat).trim()),
+            lng: Number(String(p?.lng).trim()),
           }))
         )
       : []
 
-  const validPlaces = places.filter((p: any) =>
-    p?.lat != null &&
-    p?.lng != null &&
-    !isNaN(Number(p.lat)) &&
-    !isNaN(Number(p.lng))
-  )
+  // 🔥 2차 validation (Google crash 방지 핵심)
+  const validPlaces = places.filter((p: any) => {
+
+    const isValid =
+      Number.isFinite(p.lat) &&
+      Number.isFinite(p.lng) &&
+      Math.abs(p.lat) > 0 &&
+      Math.abs(p.lng) > 0
+
+    if (!isValid) {
+      console.warn("❌ INVALID PLACE FILTERED:", p)
+    }
+
+    return isValid
+  })
+
+  console.log("✅ VALID PLACES:", validPlaces)
 
   const colorByDay = (day: number) =>
     DAY_COLORS[(day - 1) % DAY_COLORS.length]
+
+  // 🔥 안전 fallback
+  if (validPlaces.length === 0) {
+    return (
+      <div className="h-[500px] bg-red-500/10 flex items-center justify-center">
+        No valid map data
+      </div>
+    )
+  }
 
   if (region === 'global') {
     return (
