@@ -1,60 +1,76 @@
+import { openai } from "@/lib/ai/openai"
 import { NextResponse } from "next/server"
-import { detectLanguage } from "@/lib/utils/language"
 
 export async function POST(req: Request) {
 
-  const { destination, days } = await req.json()
+  try {
 
-  const lang = detectLanguage(destination)
+    const { destination, days } = await req.json()
 
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
+    const res = await openai.chat.completions.create({
       model: "gpt-4.1-mini",
-      messages: [{
-        role: "user",
-        content: `
+      messages: [
+        {
+          role: "user",
+          content: `
 You are a travel planner.
 
-Language: ${lang}
+Return ONLY valid JSON.
 
-RULES:
-- If lang is "ko", respond in Korean names
-- If lang is "en", respond in English names
+IMPORTANT RULES:
+- Detect region automatically:
+  - If destination is in Korea → "korea"
+  - Otherwise → "global"
+- Each place MUST include:
+  name, description, lat, lng, type (hotel, cafe, food, attraction)
 
-Return ONLY JSON.
+OUTPUT FORMAT:
 
-FORMAT:
 {
   "destination": "${destination}",
-  "region": "korea or global",
-  "language": "${lang}",
+  "region": "korea | global",
   "days": [
     {
       "day": 1,
       "places": [
         {
-          "name": "",
+          "name": "string",
+          "description": "string",
           "lat": 0,
-          "lng": 0
+          "lng": 0,
+          "type": "cafe | food | hotel | attraction"
         }
       ]
     }
   ]
 }
+
+Make a ${days}-day itinerary for ${destination}.
 `
-      }]
+        }
+      ]
     })
-  })
 
-  const data = await res.json()
-  const content = data.choices[0].message.content
+    const content = res.choices[0]?.message?.content || ""
 
-  const json = JSON.parse(content.match(/\{[\s\S]*\}/)[0])
+    const match = content.match(/\{[\s\S]*\}/)
 
-  return NextResponse.json(json)
+    if (!match) {
+      return NextResponse.json(
+        { error: "invalid response" },
+        { status: 500 }
+      )
+    }
+
+    const parsed = JSON.parse(match[0])
+
+    return NextResponse.json(parsed)
+
+  } catch (err: any) {
+
+    return NextResponse.json(
+      { error: err.message },
+      { status: 500 }
+    )
+  }
 }

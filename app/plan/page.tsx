@@ -1,119 +1,70 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-import dynamic from 'next/dynamic'
-
-// 🚨 Map SSR 완전 차단
-const MapView = dynamic(
-  () => import('@/components/map/MapView'),
-  { ssr: false }
-)
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 
 export default function PlanPage() {
 
-  const [plan, setPlan] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
+  const router = useRouter()
 
-  const destinationRef = useRef<string | null>(null)
-  const daysRef = useRef<number>(3)
+  const [destination, setDestination] = useState("")
+  const [days, setDays] = useState(3)
 
-  // 🚨 1. sessionStorage는 무조건 client only
-  useEffect(() => {
+  const handleSubmit = () => {
 
-    if (typeof window === 'undefined') return
-
-    destinationRef.current = sessionStorage.getItem("destination")
-    daysRef.current = Number(sessionStorage.getItem("days") || 3)
-
-    console.log("DEST:", destinationRef.current)
-    console.log("DAYS:", daysRef.current)
-
-  }, [])
-
-  // 🚨 2. API 호출 LOCK (rate limit 핵심 해결)
-  const hasFetched = useRef(false)
-
-  useEffect(() => {
-
-    if (hasFetched.current) return
-    if (!destinationRef.current) return
-
-    hasFetched.current = true
-
-    const fetchPlan = async () => {
-
-      try {
-
-        setLoading(true)
-
-        const res = await fetch("/api/plan", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            destination: destinationRef.current,
-            days: daysRef.current
-          })
-        })
-
-        const data = await res.json()
-
-        console.log("🔥 PLAN RESULT:", data)
-
-        setPlan(data)
-
-      } catch (err) {
-        console.error("PLAN ERROR:", err)
-      } finally {
-        setLoading(false)
-      }
+    if (!destination) {
+      alert("행선지를 입력해주세요")
+      return
     }
 
-    fetchPlan()
+    // 👉 sessionStorage로 전달 (간단 + 안정)
+    sessionStorage.setItem("destination", destination)
+    sessionStorage.setItem("days", String(days))
 
-  }, [])
+    router.push("/plan/result")
+  }
 
   return (
-    <div className="relative min-h-screen text-white overflow-hidden">
+    <div
+      className="min-h-screen flex items-center justify-center text-white"
+      style={{
+        backgroundImage:
+          "url('https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
 
-      {/* 🌍 BACKGROUND */}
-      <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{
-          backgroundImage:
-            "url('https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&w=1600&q=80')"
-        }}
-      />
+      <div className="bg-black/70 p-10 rounded-2xl w-[350px]">
 
-      {/* 🌑 OVERLAY */}
-      <div className="absolute inset-0 bg-black/70" />
-
-      {/* CONTENT */}
-      <div className="relative z-10 p-6">
-
-        <h1 className="text-2xl font-bold mb-4">
-          Travel Plan
+        <h1 className="text-2xl font-bold mb-6">
+          Plan Your Trip
         </h1>
 
-        {/* LOADING */}
-        {loading && (
-          <div className="h-[500px] flex items-center justify-center text-white/70">
-            Generating your AI travel plan...
-          </div>
-        )}
+        {/* DESTINATION */}
+        <input
+          className="w-full p-2 mb-4 text-black rounded"
+          placeholder="Enter destination (e.g. Seoul, Tokyo)"
+          value={destination}
+          onChange={(e) => setDestination(e.target.value)}
+        />
 
-        {/* ERROR */}
-        {!loading && !plan && (
-          <div className="h-[500px] flex items-center justify-center text-red-400">
-            Failed to generate plan
-          </div>
-        )}
+        {/* DAYS */}
+        <input
+          type="number"
+          className="w-full p-2 mb-6 text-black rounded"
+          value={days}
+          min={1}
+          max={14}
+          onChange={(e) => setDays(Number(e.target.value))}
+        />
 
-        {/* MAP */}
-        {!loading && plan && (
-          <MapView plan={plan} />
-        )}
+        <button
+          onClick={handleSubmit}
+          className="w-full bg-white text-black py-2 rounded font-semibold"
+        >
+          Generate Plan
+        </button>
 
       </div>
 

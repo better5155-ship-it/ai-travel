@@ -1,45 +1,34 @@
-'use client'
+import Link from "next/link"
 
-import Hero from '@/components/home/Hero'
-import LanguageDetectInput from '@/components/home/LanguageDetectInput'
-import { useRouter } from 'next/navigation'
-
-export default function Home() {
-
-  const router = useRouter()
-
-  const handleSubmit = (destination: string, days: number) => {
-    sessionStorage.setItem("destination", destination)
-    sessionStorage.setItem("days", String(days))
-    router.push("/plan")
-  }
-
+export default function HomePage() {
   return (
-    <div className="relative w-full h-screen overflow-hidden">
+    <div
+      className="min-h-screen flex items-center justify-center text-white"
+      style={{
+        backgroundImage:
+          "url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
+      <div className="bg-black/60 p-10 rounded-2xl text-center">
 
-      {/* BACKGROUND WRAPPER (핵심) */}
-      <div className="absolute inset-0 -z-10">
-        <div
-          className="w-full h-full bg-cover bg-center"
-          style={{
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80')"
-          }}
-        />
+        <h1 className="text-4xl font-bold mb-4">
+          Travel AI
+        </h1>
+
+        <p className="mb-6 text-white/80">
+          Plan your trip with AI
+        </p>
+
+        <Link
+          href="/plan"
+          className="px-6 py-3 bg-white text-black rounded-xl font-semibold"
+        >
+          Start Planning
+        </Link>
+
       </div>
-
-      {/* OVERLAY */}
-      <div className="absolute inset-0 bg-black/60 -z-10" />
-
-      {/* CONTENT */}
-      <div className="relative z-10 flex flex-col items-center justify-center h-full text-white space-y-8">
-
-        <Hero />
-
-        <LanguageDetectInput onSubmit={handleSubmit} />
-
-      </div>
-
     </div>
   )
 }
