@@ -9,6 +9,8 @@ import {
 
 import "leaflet/dist/leaflet.css"
 
+import { LatLngExpression } from "leaflet"
+
 type Place = {
   name: string
   lat: number
@@ -21,7 +23,11 @@ export default function Map({
   places: Place[]
 }) {
 
-  const center =
+  // =====================================================
+  // 🔥 지도 중심
+  // =====================================================
+
+  const center: LatLngExpression =
 
     places.length > 0
 
@@ -32,7 +38,7 @@ export default function Map({
   return (
 
     <MapContainer
-      center={center as any}
+      center={center}
       zoom={12}
       style={{
         width: "100%",
