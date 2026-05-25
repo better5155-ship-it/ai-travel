@@ -1,20 +1,34 @@
 import "./globals.css"
-import Script from "next/script"
 
-export default function RootLayout({ children }: any) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+
   return (
-    <html lang="en">
+    <html
+      lang="en"
+      suppressHydrationWarning
+    >
 
-      <body className="min-h-screen">
+      <head>
 
-        {/* 🔥 Kakao Maps SDK */}
-        <Script
-          src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=3d112e0ba8776ccde7a66d1867f26b39"
-          strategy="beforeInteractive"
+        {/* Kakao */}
+        <script
+          src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=3d112e0ba8776ccde7a66d1867f26b39`}
         />
 
-        {children}
+        {/* Google */}
+        <script
+			src={`https://maps.googleapis.com/maps/api/js?key=${process.env.GOOGLE_MAPS_API_KEY}&libraries=geometry,marker`}
+			async
+		></script>
 
+      </head>
+
+      <body className="min-h-screen">
+        {children}
       </body>
 
     </html>

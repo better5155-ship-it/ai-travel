@@ -5,31 +5,44 @@ import GoogleMapView from "./GoogleMapView"
 
 export default function MapView({ plan }: any) {
 
-  if (!plan) return null
+  const allPlaces =
+    plan.days.flatMap(
+      (day: any) =>
 
-  const region = plan?.region || "korea"
+        day.places.map((p: any) => ({
+          ...p,
+          day: day.day,
+        }))
+    )
 
-  const places =
-    plan?.days?.flatMap((d: any) =>
-      d?.places?.map((p: any) => ({
-        ...p,
-        day: d.day,
-      }))
-    ) || []
-
-  const validPlaces = places.filter(
-    (p: any) =>
-      Number.isFinite(p.lat) &&
-      Number.isFinite(p.lng)
-  )
+  const allRoutes =
+    plan.days.flatMap(
+      (day: any) =>
+        day.routes || []
+    )
 
   return (
-    <div style={{ width: "100%", height: "500px" }}>
 
-      {region === "korea" ? (
-        <KakaoMapView places={validPlaces} />
+    <div
+      style={{
+        width: "100%",
+        height: "600px",
+      }}
+    >
+
+      {plan.region === "korea" ? (
+
+        <KakaoMapView
+          places={allPlaces}
+        />
+
       ) : (
-        <GoogleMapView places={validPlaces} />
+
+        <GoogleMapView
+          places={allPlaces}
+          routes={allRoutes}
+        />
+
       )}
 
     </div>
