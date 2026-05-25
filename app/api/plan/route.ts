@@ -76,7 +76,12 @@ Requirements:
 - Include famous tourist attractions
 - Include restaurants/cafes/shopping if appropriate
 - Avoid unrealistic schedules
-- Each day should contain 3-6 activities
+- Each day should contain 3-6 places
+
+Each place MUST include:
+- name
+- lat
+- lng
 
 Format:
 
@@ -84,10 +89,12 @@ Format:
   "days": [
     {
       "day": 1,
-      "activities": [
-        "Visit Shibuya",
-        "Dinner at Ichiran",
-        "Tokyo Tower"
+      "places": [
+        {
+          "name": "Shibuya Crossing",
+          "lat": 35.6595,
+          "lng": 139.7005
+        }
       ]
     }
   ]

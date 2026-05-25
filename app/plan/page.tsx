@@ -2,11 +2,22 @@
 
 import { useEffect, useState } from "react"
 
+import dynamic from "next/dynamic"
+
+const Map = dynamic(
+  () => import("@/components/Map"),
+  {
+    ssr: false
+  }
+)
+
 export default function PlanPage() {
 
   const [loading, setLoading] = useState(true)
 
   const [plan, setPlan] = useState<any[]>([])
+
+  const [selectedDay, setSelectedDay] = useState(0)
 
   useEffect(() => {
 
@@ -102,13 +113,20 @@ export default function PlanPage() {
   }
 
   // =====================================================
+  // 🔥 현재 Day 장소
+  // =====================================================
+
+  const currentPlaces =
+    plan?.[selectedDay]?.places || []
+
+  // =====================================================
   // 🔥 UI
   // =====================================================
 
   return (
 
     <div
-      className="min-h-screen text-white p-10"
+      className="min-h-screen text-white"
       style={{
         backgroundImage:
           "url('https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1')",
@@ -118,57 +136,95 @@ export default function PlanPage() {
     >
 
       <div className="
-        bg-black/70
+        min-h-screen
+        bg-black/60
         backdrop-blur-md
-        p-8
-        rounded-3xl
+        grid
+        grid-cols-1
+        lg:grid-cols-2
       ">
 
-        <h1 className="text-4xl font-bold mb-10">
-          AI Travel Plan
-        </h1>
+        {/* ================================================= */}
+        {/* 🔥 LEFT */}
+        {/* ================================================= */}
 
-        <div className="space-y-8">
+        <div className="p-8 overflow-y-auto">
 
-          {Array.isArray(plan) && plan.map((day, idx) => (
+          <h1 className="text-4xl font-bold mb-10">
+            AI Travel Plan
+          </h1>
 
-            <div
-              key={idx}
-              className="bg-white/10 p-6 rounded-2xl"
-            >
+          <div className="space-y-8">
 
-              <h2 className="text-3xl font-bold mb-5">
-                Day {day.day}
-              </h2>
+            {Array.isArray(plan) && plan.map((day, idx) => (
 
-              <div className="space-y-3">
+              <div
+                key={idx}
 
-                {day.activities?.map(
+                onClick={() =>
+                  setSelectedDay(idx)
+                }
 
-                  (activity: string, i: number) => (
+                className={`
+                  p-6
+                  rounded-2xl
+                  cursor-pointer
+                  transition
 
-                    <div
-                      key={i}
-                      className="
-                        bg-black/30
-                        p-4
-                        rounded-xl
-                      "
-                    >
+                  ${
+                    selectedDay === idx
 
-                      ✈️ {activity}
+                      ? "bg-blue-500"
 
-                    </div>
+                      : "bg-white/10 hover:bg-white/20"
+                  }
+                `}
+              >
 
-                  )
+                <h2 className="text-3xl font-bold mb-5">
+                  Day {day.day}
+                </h2>
 
-                )}
+                <div className="space-y-3">
+
+                  {day.places?.map(
+
+                    (place: any, i: number) => (
+
+                      <div
+                        key={i}
+                        className="
+                          bg-black/30
+                          p-4
+                          rounded-xl
+                        "
+                      >
+
+                        📍 {place.name}
+
+                      </div>
+
+                    )
+
+                  )}
+
+                </div>
 
               </div>
 
-            </div>
+            ))}
 
-          ))}
+          </div>
+
+        </div>
+
+        {/* ================================================= */}
+        {/* 🔥 RIGHT MAP */}
+        {/* ================================================= */}
+
+        <div className="h-screen sticky top-0">
+
+          <Map places={currentPlaces} />
 
         </div>
 

@@ -1,68 +1,104 @@
 import { NextResponse } from "next/server"
 
+// =====================================================
+// 🔥 도시 → 공항 코드
+// =====================================================
+
 async function getAirport(city: string) {
 
-  const res = await fetch("http://localhost:3000/api/airport", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ city })
-  })
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL
+
+  const res = await fetch(
+
+    `${baseUrl}/api/airport`,
+
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      body: JSON.stringify({ city })
+    }
+  )
 
   const data = await res.json()
 
   return data.airport
 }
 
+// =====================================================
 // 🔥 항공권 parser
+// =====================================================
+
 function parseFlights(flights: any[]) {
 
   if (!Array.isArray(flights)) {
     return []
   }
 
-  return flights.slice(0, 5).map((f: any) => {
+  return flights
+    .slice(0, 5)
 
-    const segment = f?.flights?.[0]
+    .map((f: any, index: number) => {
 
-    console.log("SEGMENT:")
-    console.log(JSON.stringify(segment, null, 2))
+      const segment =
+        f?.flights?.[0]
 
-    return {
+      return {
 
-      airline:
-        segment?.airline ||
-        "Unknown Airline",
+        // 🔥 고유 ID
+        _id:
 
-      // 🔥 시간 필드 수정
-      departure_time:
-        segment?.departure_airport?.time ||
-        segment?.departure_time ||
-        "N/A",
+          `${segment?.airline}-` +
 
-      arrival_time:
-        segment?.arrival_airport?.time ||
-        segment?.arrival_time ||
-        "N/A",
+          `${segment?.departure_airport?.time}-` +
 
-      // 🔥 가격
-      price:
-        f?.price ||
-        f?.price_total ||
-        0,
+          `${f?.price}-` +
 
-      // 🔥 총 비행 시간
-      duration:
-        f?.total_duration ||
-        0,
+          `${index}`,
 
-      // 🔥 경유 횟수
-      stops:
-        f?.layovers?.length ||
-        0
-    }
-  })
+        airline:
+
+          segment?.airline ||
+
+          "Unknown Airline",
+
+        departure_time:
+
+          segment?.departure_airport?.time ||
+
+          "N/A",
+
+        arrival_time:
+
+          segment?.arrival_airport?.time ||
+
+          "N/A",
+
+        price:
+
+          f?.price ||
+
+          f?.price_total ||
+
+          0,
+
+        duration:
+
+          f?.total_duration ||
+
+          0,
+
+        stops:
+
+          f?.layovers?.length ||
+
+          0
+      }
+    })
 }
 
 export async function POST(req: Request) {
@@ -77,104 +113,184 @@ export async function POST(req: Request) {
       tripType
     } = await req.json()
 
-    const apiKey = process.env.SERPAPI_KEY!
+    const apiKey =
+      process.env.SERPAPI_KEY!
 
-    // 🔥 도시 → 공항 코드
-    const fromAirport = await getAirport(from)
-    const toAirport = await getAirport(to)
+    // =================================================
+    // 🔥 공항 코드
+    // =================================================
 
-    console.log("FROM AIRPORT:", fromAirport)
-    console.log("TO AIRPORT:", toAirport)
+    const fromAirport =
+      await getAirport(from)
 
-    // =====================================================
-    // 🔥 OUTBOUND (편도 검색)
-    // =====================================================
+    const toAirport =
+      await getAirport(to)
 
-    const outboundUrl =
-      `https://serpapi.com/search.json?engine=google_flights` +
-      `&departure_id=${fromAirport}` +
-      `&arrival_id=${toAirport}` +
-      `&outbound_date=${departDate}` +
-      `&type=2` +
-      `&currency=KRW` +
-      `&hl=ko` +
-      `&api_key=${apiKey}`
-
-    console.log("OUTBOUND URL:", outboundUrl)
-
-    const outboundRes = await fetch(outboundUrl, {
-      cache: "no-store"
-    })
-
-    const outboundData = await outboundRes.json()
-
-    console.log("OUTBOUND DATA:")
-    console.log(JSON.stringify(outboundData, null, 2))
-
-    const outboundFlights = parseFlights(
-
-      outboundData?.best_flights ||
-      outboundData?.other_flights ||
-      outboundData?.top_flights ||
-      []
-
+    console.log(
+      "FROM AIRPORT:",
+      fromAirport
     )
 
-    // =====================================================
-    // 🔥 RETURN (편도 검색)
-    // =====================================================
+    console.log(
+      "TO AIRPORT:",
+      toAirport
+    )
 
-    let returnFlights: any[] = []
+    // =================================================
+    // 🔥 OUTBOUND
+    // =================================================
 
-    if (tripType === "round" && returnDate) {
+    const outboundUrl =
 
-      const returnUrl =
-        `https://serpapi.com/search.json?engine=google_flights` +
-        `&departure_id=${toAirport}` +
-        `&arrival_id=${fromAirport}` +
-        `&outbound_date=${returnDate}` +
-        `&type=2` +
-        `&currency=KRW` +
-        `&hl=ko` +
-        `&api_key=${apiKey}`
+      `https://serpapi.com/search.json?engine=google_flights` +
 
-      console.log("RETURN URL:", returnUrl)
+      `&departure_id=${fromAirport}` +
 
-      const returnRes = await fetch(returnUrl, {
+      `&arrival_id=${toAirport}` +
+
+      `&outbound_date=${departDate}` +
+
+      `&type=2` +
+
+      `&currency=KRW` +
+
+      `&hl=ko` +
+
+      `&api_key=${apiKey}`
+
+    console.log("OUTBOUND URL:")
+    console.log(outboundUrl)
+
+    const outboundRes =
+      await fetch(outboundUrl, {
         cache: "no-store"
       })
 
-      const returnData = await returnRes.json()
+    const outboundData =
+      await outboundRes.json()
 
-      console.log("RETURN DATA:")
-      console.log(JSON.stringify(returnData, null, 2))
+    console.log("OUTBOUND DATA:")
+    console.log(
 
-      returnFlights = parseFlights(
+      JSON.stringify(
+        outboundData,
+        null,
+        2
+      )
+    )
 
-        returnData?.best_flights ||
-        returnData?.other_flights ||
-        returnData?.top_flights ||
+    const outboundFlights =
+
+      parseFlights(
+
+        outboundData?.best_flights ||
+
+        outboundData?.other_flights ||
+
+        outboundData?.top_flights ||
+
         []
 
       )
+
+    // =================================================
+    // 🔥 RETURN
+    // =================================================
+
+    let returnFlights: any[] = []
+
+    if (
+      tripType === "round" &&
+      returnDate
+    ) {
+
+      const returnUrl =
+
+        `https://serpapi.com/search.json?engine=google_flights` +
+
+        `&departure_id=${toAirport}` +
+
+        `&arrival_id=${fromAirport}` +
+
+        `&outbound_date=${returnDate}` +
+
+        `&type=2` +
+
+        `&currency=KRW` +
+
+        `&hl=ko` +
+
+        `&api_key=${apiKey}`
+
+      console.log("RETURN URL:")
+      console.log(returnUrl)
+
+      const returnRes =
+        await fetch(returnUrl, {
+          cache: "no-store"
+        })
+
+      const returnData =
+        await returnRes.json()
+
+      console.log("RETURN DATA:")
+      console.log(
+
+        JSON.stringify(
+          returnData,
+          null,
+          2
+        )
+      )
+
+      returnFlights =
+
+        parseFlights(
+
+          returnData?.best_flights ||
+
+          returnData?.other_flights ||
+
+          returnData?.top_flights ||
+
+          []
+
+        )
     }
 
-    console.log("OUTBOUND COUNT:", outboundFlights.length)
-    console.log("RETURN COUNT:", returnFlights.length)
+    console.log(
+      "OUTBOUND COUNT:",
+      outboundFlights.length
+    )
+
+    console.log(
+      "RETURN COUNT:",
+      returnFlights.length
+    )
 
     return NextResponse.json({
+
       outboundFlights,
+
       returnFlights
+
     })
 
   } catch (err) {
 
-    console.error("FLIGHT API ERROR:", err)
+    console.error(
+      "FLIGHT API ERROR:",
+      err
+    )
 
     return NextResponse.json({
+
       outboundFlights: [],
+
       returnFlights: [],
+
       error: "Flight API failed"
+
     })
   }
 }
