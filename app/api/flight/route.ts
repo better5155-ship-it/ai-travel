@@ -4,23 +4,25 @@ import { NextResponse } from "next/server"
 // 🔥 도시 → 공항 코드
 // =====================================================
 
-async function getAirport(city: string) {
-
-  const baseUrl =
-    process.env.NEXT_PUBLIC_BASE_URL
+async function getAirport(
+  city: string,
+  origin: string
+) {
 
   const res = await fetch(
 
-	`${process.env.NEXT_PUBLIC_BASE_URL}/api/airport`,
+    `${origin}/api/airport`,
 
-	{
-		method: "POST",
-		headers: {
-		"Content-Type": "application/json"
-		},
-		body: JSON.stringify({ city })
-	}
-	)
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      body: JSON.stringify({ city })
+    }
+  )
 
   const data = await res.json()
 
@@ -31,85 +33,119 @@ async function getAirport(city: string) {
 // 🔥 항공권 parser
 // =====================================================
 
-function parseFlights(flights: any[]) {
+function parseFlights(
+  flights: any[]
+) {
 
   if (!Array.isArray(flights)) {
     return []
   }
 
   return flights
+
     .slice(0, 5)
 
-    .map((f: any, index: number) => {
+    .map(
 
-      const segment =
-        f?.flights?.[0]
+      (
+        f: any,
+        index: number
+      ) => {
 
-      return {
+        const segment =
+          f?.flights?.[0]
 
-        // 🔥 고유 ID
-        _id:
+        return {
 
-          `${segment?.airline}-` +
+          // 🔥 고유 ID
+          _id:
 
-          `${segment?.departure_airport?.time}-` +
+            `${segment?.airline}-` +
 
-          `${f?.price}-` +
+            `${segment?.departure_airport?.time}-` +
 
-          `${index}`,
+            `${f?.price}-` +
 
-        airline:
+            `${index}`,
 
-          segment?.airline ||
+          // 🔥 항공사
+          airline:
 
-          "Unknown Airline",
+            segment?.airline ||
 
-        departure_time:
+            "Unknown Airline",
 
-          segment?.departure_airport?.time ||
+          // 🔥 출발 시간
+          departure_time:
 
-          "N/A",
+            segment
+              ?.departure_airport
+              ?.time ||
 
-        arrival_time:
+            "N/A",
 
-          segment?.arrival_airport?.time ||
+          // 🔥 도착 시간
+          arrival_time:
 
-          "N/A",
+            segment
+              ?.arrival_airport
+              ?.time ||
 
-        price:
+            "N/A",
 
-          f?.price ||
+          // 🔥 가격
+          price:
 
-          f?.price_total ||
+            f?.price ||
 
-          0,
+            f?.price_total ||
 
-        duration:
+            0,
 
-          f?.total_duration ||
+          // 🔥 총 비행 시간
+          duration:
 
-          0,
+            f?.total_duration ||
 
-        stops:
+            0,
 
-          f?.layovers?.length ||
+          // 🔥 경유
+          stops:
 
-          0
+            f?.layovers?.length ||
+
+            0
+        }
       }
-    })
+    )
 }
 
-export async function POST(req: Request) {
+// =====================================================
+// 🔥 API
+// =====================================================
+
+export async function POST(
+  req: Request
+) {
 
   try {
 
     const {
+
       from,
       to,
       departDate,
       returnDate,
       tripType
+
     } = await req.json()
+
+    // =================================================
+    // 🔥 origin
+    // =================================================
+
+    const origin =
+      req.headers.get("origin")!
 
     const apiKey =
       process.env.SERPAPI_KEY!
@@ -119,10 +155,18 @@ export async function POST(req: Request) {
     // =================================================
 
     const fromAirport =
-      await getAirport(from)
+
+      await getAirport(
+        from,
+        origin
+      )
 
     const toAirport =
-      await getAirport(to)
+
+      await getAirport(
+        to,
+        origin
+      )
 
     console.log(
       "FROM AIRPORT:",
@@ -156,18 +200,31 @@ export async function POST(req: Request) {
 
       `&api_key=${apiKey}`
 
-    console.log("OUTBOUND URL:")
-    console.log(outboundUrl)
+    console.log(
+      "OUTBOUND URL:"
+    )
+
+    console.log(
+      outboundUrl
+    )
 
     const outboundRes =
-      await fetch(outboundUrl, {
-        cache: "no-store"
-      })
+
+      await fetch(
+        outboundUrl,
+        {
+          cache: "no-store"
+        }
+      )
 
     const outboundData =
+
       await outboundRes.json()
 
-    console.log("OUTBOUND DATA:")
+    console.log(
+      "OUTBOUND DATA:"
+    )
+
     console.log(
 
       JSON.stringify(
@@ -181,11 +238,14 @@ export async function POST(req: Request) {
 
       parseFlights(
 
-        outboundData?.best_flights ||
+        outboundData
+          ?.best_flights ||
 
-        outboundData?.other_flights ||
+        outboundData
+          ?.other_flights ||
 
-        outboundData?.top_flights ||
+        outboundData
+          ?.top_flights ||
 
         []
 
@@ -195,11 +255,17 @@ export async function POST(req: Request) {
     // 🔥 RETURN
     // =================================================
 
-    let returnFlights: any[] = []
+    let returnFlights:
+      any[] = []
 
     if (
-      tripType === "round" &&
+
+      tripType === "round"
+
+      &&
+
       returnDate
+
     ) {
 
       const returnUrl =
@@ -220,18 +286,31 @@ export async function POST(req: Request) {
 
         `&api_key=${apiKey}`
 
-      console.log("RETURN URL:")
-      console.log(returnUrl)
+      console.log(
+        "RETURN URL:"
+      )
+
+      console.log(
+        returnUrl
+      )
 
       const returnRes =
-        await fetch(returnUrl, {
-          cache: "no-store"
-        })
+
+        await fetch(
+          returnUrl,
+          {
+            cache: "no-store"
+          }
+        )
 
       const returnData =
+
         await returnRes.json()
 
-      console.log("RETURN DATA:")
+      console.log(
+        "RETURN DATA:"
+      )
+
       console.log(
 
         JSON.stringify(
@@ -245,11 +324,14 @@ export async function POST(req: Request) {
 
         parseFlights(
 
-          returnData?.best_flights ||
+          returnData
+            ?.best_flights ||
 
-          returnData?.other_flights ||
+          returnData
+            ?.other_flights ||
 
-          returnData?.top_flights ||
+          returnData
+            ?.top_flights ||
 
           []
 
@@ -265,6 +347,10 @@ export async function POST(req: Request) {
       "RETURN COUNT:",
       returnFlights.length
     )
+
+    // =================================================
+    // 🔥 RESPONSE
+    // =================================================
 
     return NextResponse.json({
 
