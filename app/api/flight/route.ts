@@ -11,18 +11,16 @@ async function getAirport(city: string) {
 
   const res = await fetch(
 
-    `${baseUrl}/api/airport`,
+	`${process.env.NEXT_PUBLIC_BASE_URL}/api/airport`,
 
-    {
-      method: "POST",
-
-      headers: {
-        "Content-Type": "application/json"
-      },
-
-      body: JSON.stringify({ city })
-    }
-  )
+	{
+		method: "POST",
+		headers: {
+		"Content-Type": "application/json"
+		},
+		body: JSON.stringify({ city })
+	}
+	)
 
   const data = await res.json()
 
